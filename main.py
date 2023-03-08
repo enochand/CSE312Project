@@ -10,13 +10,13 @@ counter.insert_one({"num_users": 0})
 app = Flask(__name__)
 
 
+# landing page; returns index.html
 @app.get('/')
 def landing():
     return render_template('index.html')
 
 
-#add protection from html injection
-#add password encryption
+# route for creating new user, called in index.html
 @app.post('/signup')
 def new_user():
     username = request.form['new_username']
@@ -26,6 +26,7 @@ def new_user():
     return f"User {username} registered successfully"
 
 
+# route to view user info by ID - returns plaintext for now
 @app.get('/user/<user_id>')
 def user_info(user_id):
     user = users.find_one({"id": int(user_id)})
