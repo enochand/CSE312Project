@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect
 from pymongo import MongoClient
+import secrets
 
 mongo_client = MongoClient('mongo')
 db = mongo_client['excaliber']
@@ -7,6 +8,9 @@ users = db['users']
 counter = db["counter"]
 counter.insert_one({"num_users": 0})
 app = Flask(__name__)
+
+
+user_tokens = {}
 
 
 # landing page; returns index.html (or redirects to home if logged in)
@@ -46,7 +50,7 @@ def returning_user():
     if user["email"] != email:
         return "Invalid Username or Password"
     response = redirect('/home')
-    response.set_cookie('token', str(user["id"]))  # needs to be modified to create unique token
+    response.set_cookie('token', generate_user_token(str(user["id"])))  # needs to be modified to create unique token
     return response
 
 
@@ -62,13 +66,24 @@ def user_info(user_id):
 @app.post('/logout')
 def log_out():
     response = redirect("/")
+    user_token = request.cookies.get("token")
     response.set_cookie("token", "", expires=0)
+    user_tokens.pop(user_token)
+    print(user_tokens, flush=True)
     return response
 
 
 @app.get('/home')
 def home():
     return render_template('home.html')
+
+
+# uses secrets library to make a token, adds to token dictionary
+def generate_user_token(user_id):
+    user_token = secrets.token_urlsafe(20)
+    user_tokens[user_token] = user_id
+    print(user_tokens, flush=True)
+    return user_token
 
 
 if __name__ == "__main__":
