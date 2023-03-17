@@ -17,11 +17,11 @@ user_tokens = {}
 @app.get('/')
 def landing():
     # check cookies; if logged in take to home page
-    user_token = request.cookies.get("token")  # needs to be modified to find the id based on token
-    user = users.find_one({"id": user_tokens[user_token]})
+    user_token = request.cookies.get("token")
+    user = is_logged_in(user_token)
     if not user:
-        return render_template('index.html')
-    return redirect('/home')
+        return render_template("index.html")
+    return redirect("/home")
 
 
 # route for creating new user, called in index.html
@@ -49,8 +49,14 @@ def returning_user():
     # exit function if password does not match
     if user["email"] != email:
         return "Invalid Username or Password"
+    # log out of current account
+    user_token = request.cookies.get("token")
+    old_user = is_logged_in(user_token)
+    if old_user:
+        user_tokens.pop(user_token)
     response = redirect('/home')
-    response.set_cookie('token', generate_user_token(str(user["id"])))  # needs to be modified to create unique token
+    new_token = generate_user_token(str(user["id"]))
+    response.set_cookie('token', new_token)
     return response
 
 
@@ -69,21 +75,33 @@ def log_out():
     user_token = request.cookies.get("token")
     response.set_cookie("token", "", expires=0)
     user_tokens.pop(user_token)
-    print(user_tokens, flush=True)
     return response
 
 
+# checks if user is logged in, takes them to home page
 @app.get('/home')
 def home():
-    return render_template('home.html')
+    user_token = request.cookies.get("token")
+    user = is_logged_in(user_token)
+    if user:
+        return render_template('home.html')
+    return redirect('/')
 
 
 # uses secrets library to make a token, adds to token dictionary
 def generate_user_token(user_id):
     user_token = secrets.token_urlsafe(20)
     user_tokens[user_token] = user_id
-    print(user_tokens, flush=True)
     return user_token
+
+
+# returns user if the user is logged in
+def is_logged_in(user_token):
+    if user_token in user_tokens.keys():
+        user = users.find_one({"id": int(user_tokens[user_token])})
+    else:
+        user = None
+    return user
 
 
 if __name__ == "__main__":
