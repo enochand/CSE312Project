@@ -17,8 +17,8 @@ user_tokens = {}
 @app.get('/')
 def landing():
     # check cookies; if logged in take to home page
-    token = request.cookies.get("token")  # needs to be modified to find the id based on token
-    user = users.find_one({"id": token})
+    user_token = request.cookies.get("token")  # needs to be modified to find the id based on token
+    user = users.find_one({"id": user_tokens[user_token]})
     if not user:
         return render_template('index.html')
     return redirect('/home')
