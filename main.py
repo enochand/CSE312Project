@@ -2,7 +2,8 @@ from flask import Flask, render_template, request, redirect
 from pymongo import MongoClient
 import secrets
 
-mongo_client = MongoClient('mongo')
+mongo_client = MongoClient('localhost')
+# mongo_client = MongoClient('mongo')
 db = mongo_client['excaliber']
 users = db['users']
 counter = db["counter"]
@@ -86,6 +87,17 @@ def home():
     if user:
         return render_template('home.html')
     return redirect('/')
+
+
+# Send html of create auction form if logged in
+@app.get('/create')
+def create_auction():
+    # Redirect to login page if not logged in
+    user = is_logged_in(request.cookies.get("token"))
+    if user is None: # Not logged in
+        return redirect("/")
+    
+    return render_template("create_auction.html")
 
 
 # uses secrets library to make a token, adds to token dictionary
