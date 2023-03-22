@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, send_from_directory
 from pymongo import MongoClient
 import secrets
 
@@ -98,6 +98,12 @@ def create_auction():
         return redirect("/")
     
     return render_template("create_auction.html")
+
+
+# Get an image
+@app.get("/item/<path:filename>")
+def item_image(filename):
+    return send_from_directory("item", filename)
 
 
 # uses secrets library to make a token, adds to token dictionary
