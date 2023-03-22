@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Auction</title>
+</head>
+<body>
+    <h1>Create Auction</h1>
+    <form action="/create" method="post" enctype="multipart/form-data">
+        <label for="price">Starting price:</label><br>
+        <input id="price" type="number" name="price"><br>
+        <br>
+        <label for="duration">Duration (seconds):</label><br>
+        <input id="duration" type="number" name="duration"><br>
+        <br>
+        <label for="description">Description:</label><br>
+        <textarea id="description" name="description" cols="40" rows="6"></textarea><br>
+        <br>
+        <label for="image">Image:</label><br>
+        <input id="image" type="file" name="image"><br>
+        <br>
+        <input type="submit" value="Create!">
+    </form>
+</body>
+</html>
