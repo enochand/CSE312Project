@@ -156,6 +156,12 @@ def auction_info(auction_id):
         return jsonify(auction)
 
 
+# JSON list of all auctions
+@app.get('/auctions')
+def auction_list():
+    return jsonify(list(auctions.find({}, {"_id": 0})))
+
+
 # Get an image
 @app.get("/item/<path:filename>")
 def item_image(filename):
