@@ -178,6 +178,9 @@ def create_auction():
     # Insert auction into database
     auctions.insert_one(auction)
 
+    # Add auction id to associated users array of auction ids
+    users.update_one({"id": user["id"]}, {"$push": {"auctions": auction_id}})
+
     # Redirect to auction display page
     return redirect("/auctions")
 
