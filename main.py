@@ -173,7 +173,10 @@ def create_auction():
     auction["image"] = filename
     auction["description"] = description
     auction["time"] = int(time.time()) + duration
-    auction["price"] = price
+    bid = {}
+    bid["user"] = user["id"]
+    bid["bid"] = price
+    auction["bids"] = [bid]
 
     # Insert auction into database
     auctions.insert_one(auction)
@@ -191,7 +194,9 @@ def create_auction():
 # "image" = image filename without path
 # "description" = description text
 # "time" = end date timestamp
-# "price" = starting price
+# "bids" = list of bids:
+#   "user" = user id of bidder
+#   "bid" = bid amount
 @app.get('/auction/<int:auction_id>')
 def auction_info(auction_id):
     auction_id = int(auction_id)
