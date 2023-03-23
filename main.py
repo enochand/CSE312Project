@@ -165,7 +165,9 @@ def auction_list():
 # Get an image
 @app.get("/item/<path:filename>")
 def item_image(filename):
-    return send_from_directory("item", filename)
+    response = send_from_directory("item", filename)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
 
 
 def allowed_auction_image(filename):
