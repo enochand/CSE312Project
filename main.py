@@ -114,11 +114,39 @@ def create_auction():
     if user is None: # Not logged in
         return redirect("/")
     
-    # Get form elements
-    description = request.form["description"]
-    duration = int(request.form["duration"])
-    price = int(request.form["price"])
+    # Verify form elements are present
+    elements = ["description", "duration", "price"]
+    for e in elements:
+        if e not in request.form:
+            return "Missing form elements"
 
+    # Verify the description is not empty
+    description = request.form["description"]
+    if description is "":
+        return "Description must not be empty"
+    
+    # Verify the description is not too long
+    if description.__len__ > 100:
+        return "Description must not be greater than 100 characters"
+
+    # Verify numeric elements are numeric
+    try:
+        duration = int(request.form["duration"])
+    except ValueError:
+        return "Duration is not an integer"
+    
+    try:
+        price = int(request.form["price"])
+    except ValueError:
+        return "Price is not an integer"
+    
+    # Verify numeric elements are not negative
+    if duration < 0:
+        return "Duration must not be negative"
+    
+    if price < 0:
+        return "Price must not be negative"
+    
     # Get next auction id
     auction_id = auction_counter.find_one_and_update({}, {"$inc": {"count": 1}})["count"]
     
