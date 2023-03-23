@@ -132,7 +132,7 @@ def create_auction():
     auction["user"] = user["id"]
     auction["image"] = file.filename
     auction["description"] = description
-    auction["duration"] = int(time.time()) + duration
+    auction["time"] = int(time.time()) + duration
     auction["price"] = price
 
     # Insert auction into database
