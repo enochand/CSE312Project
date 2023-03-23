@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, send_from_directory
+from flask import Flask, render_template, request, redirect, send_from_directory, jsonify
 from pymongo import MongoClient
 import secrets
 import time
@@ -140,6 +140,20 @@ def create_auction():
 
     # Redirect to auction display page
     return redirect("/auctions")
+
+
+# Get auction JSON by id:
+# "id" = int id
+# "image" = image filename without path
+# "description" = description text
+# "time" = end date timestamp
+# "price" = starting price
+@app.get('/auction/<int:auction_id>')
+def auction_info(auction_id):
+    auction_id = int(auction_id)
+    auction = auctions.find_one({"id": auction_id}, {"_id": 0})
+    if auction is not None:
+        return jsonify(auction)
 
 
 # Get an image
