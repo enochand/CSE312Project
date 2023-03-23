@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, send_from_directory
 from pymongo import MongoClient
 import secrets
+import time
 
 mongo_client = MongoClient('localhost')
 # mongo_client = MongoClient('mongo')
@@ -96,13 +97,49 @@ def home():
 
 # Send html of create auction form if logged in
 @app.get('/create')
-def create_auction():
+def create_auction_page():
     # Redirect to login page if not logged in
     user = is_logged_in(request.cookies.get("token"))
     if user is None: # Not logged in
         return redirect("/")
     
     return render_template("create_auction.html")
+
+
+# Create new auction if logged in
+@app.post('/create')
+def create_auction():
+    # Redirect to login page if not logged in
+    user = is_logged_in(request.cookies.get("token"))
+    if user is None: # Not logged in
+        return redirect("/")
+    
+    # Get form elements
+    description = request.form["description"]
+    duration = int(request.form["duration"])
+    price = int(request.form["price"])
+
+    # Get next auction id
+    auction_id = auction_counter.find_one_and_update({}, {"$inc": {"count": 1}})["count"]
+    
+    # Save image
+    file = request.files["image"]
+    file.save("item/" + file.filename)
+
+    # Create auction
+    auction = {}
+    auction["id"] = auction_id
+    auction["user"] = user["id"]
+    auction["image"] = file.filename
+    auction["description"] = description
+    auction["duration"] = int(time.time()) + duration
+    auction["price"] = price
+
+    # Insert auction into database
+    auctions.insert_one(auction)
+
+    # Redirect to auction display page
+    return redirect("/auctions")
 
 
 # Get an image
