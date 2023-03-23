@@ -8,6 +8,11 @@ db = mongo_client['excaliber']
 users = db['users']
 counter = db["counter"]
 counter.insert_one({"num_users": 0})
+auction_counter = db["auction_counter"]
+if "auction_counter" not in db.list_collection_names():
+    auction_counter.insert_one({"count": 0})
+auctions = db["auctions"]
+
 app = Flask(__name__)
 
 
