@@ -15,6 +15,7 @@ if "auction_counter" not in db.list_collection_names():
 auctions = db["auctions"]
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_PATH"] = 1000000 # 1 MB
 
 
 user_tokens = {}
@@ -119,14 +120,21 @@ def create_auction():
     for e in elements:
         if e not in request.form:
             return "Missing form elements"
+        
+    if "image" not in request.files:
+        return "Missing image element"
+    
+    file = request.files["image"]
+    if file.filename == "":
+        return "No selected file"
 
     # Verify the description is not empty
     description = request.form["description"]
-    if description is "":
+    if description == "":
         return "Description must not be empty"
     
     # Verify the description is not too long
-    if description.__len__ > 100:
+    if len(description) > 100:
         return "Description must not be greater than 100 characters"
 
     # Verify numeric elements are numeric
@@ -147,18 +155,22 @@ def create_auction():
     if price < 0:
         return "Price must not be negative"
     
+    # Verify file is of an allowed file extension
+    allowed_auction_image(file.filename)
+    extension = "." + file.filename.rsplit('.', 1)[1].lower()
+
     # Get next auction id
     auction_id = auction_counter.find_one_and_update({}, {"$inc": {"count": 1}})["count"]
-    
+
     # Save image
-    file = request.files["image"]
-    file.save("item/" + file.filename)
+    filename = "item" + str(auction_id) + extension
+    file.save("item/" + filename)
 
     # Create auction
     auction = {}
     auction["id"] = auction_id
     auction["user"] = user["id"]
-    auction["image"] = file.filename
+    auction["image"] = filename
     auction["description"] = description
     auction["time"] = int(time.time()) + duration
     auction["price"] = price
