@@ -184,6 +184,7 @@ def create_auction():
 
 # Get auction JSON by id:
 # "id" = int id
+# "user" = user id of auction creator
 # "image" = image filename without path
 # "description" = description text
 # "time" = end date timestamp
