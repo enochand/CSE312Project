@@ -168,6 +168,11 @@ def item_image(filename):
     return send_from_directory("item", filename)
 
 
+def allowed_auction_image(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in {"png", "jpg", "jpeg"}
+
+
 # uses secrets library to make a token, adds to token dictionary
 def generate_user_token(user_id):
     user_token = secrets.token_urlsafe(20)
