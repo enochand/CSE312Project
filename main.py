@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request, redirect, send_from_directory, jsonify
 from pymongo import MongoClient
-import secrets
-import time
+from secrets import token_urlsafe
+from time import time
 
-mongo_client = MongoClient('localhost')
-# mongo_client = MongoClient('mongo')
+# mongo_client = MongoClient('localhost')
+mongo_client = MongoClient('mongo')
 db = mongo_client['excaliber']
 users = db['users']
 counter = db["counter"]
@@ -172,7 +172,7 @@ def create_auction():
     auction["user"] = user["id"]
     auction["image"] = filename
     auction["description"] = description
-    auction["time"] = int(time.time()) + duration
+    auction["time"] = int(time()) + duration
     bid = {}
     bid["user"] = user["id"]
     bid["bid"] = price
@@ -226,7 +226,7 @@ def allowed_auction_image(filename):
 
 # uses secrets library to make a token, adds to token dictionary
 def generate_user_token(user_id):
-    user_token = secrets.token_urlsafe(20)
+    user_token = token_urlsafe(20)
     user_tokens[user_token] = user_id
     return user_token
 
