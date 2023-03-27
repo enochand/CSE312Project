@@ -36,12 +36,14 @@ def landing():
 @app.post('/signup')
 def new_user():
     username = request.form['new_username']
-    email = request.form['new_email']
+    password = request.form['new_password']
     user = users.find_one({"username": username})
     if user is not None:
         return "Username Taken"
     counter.update_one({}, {"$inc": {"num_users": 1}})
-    users.insert_one({"id": counter.find_one()["num_users"], "username": username, "email": email})
+    # PASSWORD IS CURRENTLY STORED IN PLAINTEXT; NEEDS TO BE HASHED USING BCRYPT
+    users.insert_one({"id": counter.find_one()["num_users"], "username": username, "password": password})
+    # PASSWORD IS CURRENTLY STORED IN PLAINTEXT; NEEDS TO BE HASHED USING BCRYPT
     return redirect('/')
 
 
@@ -53,9 +55,9 @@ def returning_user():
     user = users.find_one({"username": username})
     if not user:
         return "Invalid Username or Password"
-    email = request.form['email']
+    password = request.form['password']
     # exit function if password does not match
-    if user["email"] != email:
+    if user["password"] != password:
         return "Invalid Username or Password"
     # log out of current account
     user_token = request.cookies.get("token")
@@ -73,7 +75,7 @@ def returning_user():
 def user_info(user_id):
     user = users.find_one({"id": int(user_id)})
     if user is not None:
-        return str({"id": user["id"], "username": user["username"], "email": user["email"]})
+        return str({"id": user["id"], "username": user["username"], "password": user["password"]})
 
 
 # clears cookies and redirects to login page
