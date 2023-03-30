@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, send_from_directory
 from pymongo import MongoClient
 from secrets import token_urlsafe
 from time import time
+from flask_bcrypt import Bcrypt
 
 # mongo_client = MongoClient('localhost')
 mongo_client = MongoClient('mongo')
@@ -15,6 +16,7 @@ if "auction_counter" not in db.list_collection_names():
 auctions = db["auctions"]
 
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
 app.config["MAX_CONTENT_PATH"] = 1000000 # 1 MB
 
 
@@ -42,7 +44,8 @@ def new_user():
         return "Username Taken"
     counter.update_one({}, {"$inc": {"num_users": 1}})
     # PASSWORD IS CURRENTLY STORED IN PLAINTEXT; NEEDS TO BE HASHED USING BCRYPT
-    users.insert_one({"id": counter.find_one()["num_users"], "username": username, "password": password})
+    pw_hash = bcrypt.generate_password_hash(password)
+    users.insert_one({"id": counter.find_one()["num_users"], "username": username, "password": pw_hash})
     # PASSWORD IS CURRENTLY STORED IN PLAINTEXT; NEEDS TO BE HASHED USING BCRYPT
     return redirect('/')
 
@@ -57,7 +60,7 @@ def returning_user():
         return "Invalid Username or Password"
     password = request.form['password']
     # exit function if password does not match
-    if user["password"] != password:
+    if not bcrypt.check_password_hash(user['password'], password):
         return "Invalid Username or Password"
     # log out of current account
     user_token = request.cookies.get("token")
