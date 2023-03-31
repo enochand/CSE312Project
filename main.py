@@ -1,26 +1,12 @@
 from flask import Flask, render_template, request, redirect, send_from_directory, jsonify
-from pymongo import MongoClient
-from secrets import token_urlsafe
 from time import time
-from flask_bcrypt import Bcrypt
+from sessions import Sessions
+import data
 
-# mongo_client = MongoClient('localhost')
-mongo_client = MongoClient('mongo')
-db = mongo_client['excaliber']
-users = db['users']
-counter = db["counter"]
-counter.insert_one({"num_users": 0})
-auction_counter = db["auction_counter"]
-if "auction_counter" not in db.list_collection_names():
-    auction_counter.insert_one({"count": 0})
-auctions = db["auctions"]
 
 app = Flask(__name__)
-bcrypt = Bcrypt(app)
-app.config["MAX_CONTENT_PATH"] = 1000000 # 1 MB
-
-
-user_tokens = {}
+ss = Sessions(app)  # refer to session.py
+app.config["MAX_CONTENT_PATH"] = 1000000  # 1 MB
 
 
 # landing page; returns index.html (or redirects to home if logged in)
@@ -39,14 +25,11 @@ def landing():
 def new_user():
     username = request.form['new_username']
     password = request.form['new_password']
-    user = users.find_one({"username": username})
+    user = data.find_user_by_username(username)
     if user is not None:
         return "Username Taken"
-    counter.update_one({}, {"$inc": {"num_users": 1}})
-    # PASSWORD IS CURRENTLY STORED IN PLAINTEXT; NEEDS TO BE HASHED USING BCRYPT
-    pw_hash = bcrypt.generate_password_hash(password)
-    users.insert_one({"id": counter.find_one()["num_users"], "username": username, "password": pw_hash})
-    # PASSWORD IS CURRENTLY STORED IN PLAINTEXT; NEEDS TO BE HASHED USING BCRYPT
+    pw_hash = ss.pw_hash(password)
+    data.new_user(username, pw_hash)
     return redirect('/')
 
 
@@ -55,20 +38,20 @@ def new_user():
 def returning_user():
     # exit function if username is not a user
     username = request.form['username']
-    user = users.find_one({"username": username})
+    user = data.find_user_by_username(username)
     if not user:
         return "Invalid Username or Password"
     password = request.form['password']
     # exit function if password does not match
-    if not bcrypt.check_password_hash(user['password'], password):
+    if not ss.correct_pw(user['password'], password):
         return "Invalid Username or Password"
     # log out of current account
     user_token = request.cookies.get("token")
     old_user = is_logged_in(user_token)
     if old_user:
-        user_tokens.pop(user_token)
+        ss.remove_token(user_token)
     response = redirect('/home')
-    new_token = generate_user_token(str(user["id"]))
+    new_token = ss.generate_user_token(str(user["id"]))
     response.set_cookie('token', new_token)
     return response
 
@@ -76,7 +59,7 @@ def returning_user():
 # route to view user info by ID - returns plaintext for now
 @app.get('/user/<user_id>')
 def user_info(user_id):
-    user = users.find_one({"id": int(user_id)})
+    user = data.find_user_by_id(user_id)
     if user is not None:
         return str({"id": user["id"], "username": user["username"], "password": user["password"]})
 
@@ -87,7 +70,7 @@ def log_out():
     response = redirect("/")
     user_token = request.cookies.get("token")
     response.set_cookie("token", "", expires=0)
-    user_tokens.pop(user_token)
+    ss.remove_token(user_token)
     return response
 
 
@@ -165,7 +148,7 @@ def create_auction():
     extension = "." + file.filename.rsplit('.', 1)[1].lower()
 
     # Get next auction id
-    auction_id = auction_counter.find_one_and_update({}, {"$inc": {"count": 1}})["count"]
+    auction_id = data.next_auction_id()
 
     # Save image
     filename = "item" + str(auction_id) + extension
@@ -182,13 +165,8 @@ def create_auction():
     bid["user"] = user["id"]
     bid["bid"] = price
     auction["bids"] = [bid]
-
     # Insert auction into database
-    auctions.insert_one(auction)
-
-    # Add auction id to associated users array of auction ids
-    users.update_one({"id": user["id"]}, {"$push": {"auctions": auction_id}})
-
+    data.new_auction(auction, user['id'], auction_id)
     # Redirect to auction display page
     return redirect("/auctions")
 
@@ -205,7 +183,7 @@ def create_auction():
 @app.get('/auction/<int:auction_id>')
 def auction_info(auction_id):
     auction_id = int(auction_id)
-    auction = auctions.find_one({"id": auction_id}, {"_id": 0})
+    auction = data.find_auction_by_id(auction_id)
     if auction is not None:
         return jsonify(auction)
 
@@ -213,7 +191,7 @@ def auction_info(auction_id):
 # JSON list of all auctions
 @app.get('/auctions')
 def auction_list():
-    return jsonify(list(auctions.find({}, {"_id": 0})))
+    return jsonify(list(data.all_auctions()))
 
 
 # Get an image
@@ -229,17 +207,11 @@ def allowed_auction_image(filename):
            filename.rsplit('.', 1)[1].lower() in {"png", "jpg", "jpeg"}
 
 
-# uses secrets library to make a token, adds to token dictionary
-def generate_user_token(user_id):
-    user_token = token_urlsafe(20)
-    user_tokens[user_token] = user_id
-    return user_token
-
-
 # returns user if the user is logged in
 def is_logged_in(user_token):
-    if user_token in user_tokens.keys():
-        user = users.find_one({"id": int(user_tokens[user_token])})
+    if ss.token_exists(user_token):
+        user_id = int(ss.id_from_token(user_token))
+        user = data.find_user_by_id(user_id)
     else:
         user = None
     return user
