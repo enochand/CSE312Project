@@ -39,17 +39,19 @@ def returning_user():
     # exit function if username is not a user
     username = request.form['username']
     user = data.find_user_by_username(username)
+    
     if not user:
         return "Invalid Username or Password"
     password = request.form['password']
     # exit function if password does not match
     if not ss.correct_pw(user['password'], password):
         return "Invalid Username or Password"
+    
     # log out of current account
     user_token = request.cookies.get("token")
-    old_user = is_logged_in(user_token)
-    if old_user:
+    if is_logged_in(user_token):
         ss.remove_token(user_token)
+
     response = redirect('/home')
     new_token = ss.generate_user_token(str(user["id"]))
     response.set_cookie('token', new_token)
