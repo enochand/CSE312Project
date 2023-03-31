@@ -4,6 +4,8 @@ from secrets import token_urlsafe
 """
 The Sessions class is used for managing bcrypt(used for encrypting passwords for mongodb) and 
 for handling identifying tokens given to users. Intended for anything having to do with verification
+
+The __user_tokens dict can(and most likely will) be modified to include functionality of XSRF tokens
 """
 
 
@@ -32,7 +34,7 @@ class Sessions:
     def id_from_token(self, user_token):
         if self.token_exists(user_token):
             return self.__user_tokens[user_token]
-        return ""
+        return "-1"
 
     # returns UNIQUE token and adds token to user_tokens
     def generate_user_token(self, user_id):

@@ -21,6 +21,7 @@ def new_user(username, password):
     users.insert_one({"id": counter.find_one()["num_users"], "username": username, "password": password})
 
 
+# user_id can be a string or an int
 def find_user_by_id(user_id):
     return users.find_one({"id": int(user_id)})
 
@@ -32,11 +33,11 @@ def next_auction_id():
 # adds auction to auctions, and auction_id to auctions owned by user_id
 def new_auction(auction, user_id, auction_id):
     auctions.insert_one(auction)
-    users.update_one({"id": user_id}, {"$push": {"auctions": auction_id}})
+    users.update_one({"id": int(user_id)}, {"$push": {"auctions": int(auction_id)}})
 
 
 def find_auction_by_id(auction_id):
-    return auctions.find_one({"id": auction_id}, {"_id": 0})
+    return auctions.find_one({"id": int(auction_id)}, {"_id": 0})
 
 
 def all_auctions():

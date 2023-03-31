@@ -30,7 +30,9 @@ def new_user():
         return "Username Taken"
     pw_hash = ss.pw_hash(password)
     data.new_user(username, pw_hash)
-    return redirect('/')
+    user = data.find_user_by_username(username)
+    response = login_response(user)
+    return response
 
 
 # checks for matching username/password pair, redirects to home and sets cookie
@@ -52,6 +54,11 @@ def returning_user():
     if is_logged_in(user_token):
         ss.remove_token(user_token)
 
+    response = login_response(user)
+    return response
+
+
+def login_response(user):
     response = redirect('/home')
     new_token = ss.generate_user_token(str(user["id"]))
     response.set_cookie('token', new_token)
@@ -91,7 +98,7 @@ def home():
 def create_auction_page():
     # Redirect to login page if not logged in
     user = is_logged_in(request.cookies.get("token"))
-    if user is None: # Not logged in
+    if user is None:  # Not logged in
         return redirect("/")
     
     return render_template("create_auction.html")
@@ -102,7 +109,7 @@ def create_auction_page():
 def create_auction():
     # Redirect to login page if not logged in
     user = is_logged_in(request.cookies.get("token"))
-    if user is None: # Not logged in
+    if user is None:  # Not logged in
         return redirect("/")
     
     # Verify form elements are present
@@ -157,15 +164,9 @@ def create_auction():
     file.save("item/" + filename)
 
     # Create auction
-    auction = {}
-    auction["id"] = auction_id
-    auction["user"] = user["id"]
-    auction["image"] = filename
-    auction["description"] = description
-    auction["time"] = int(time()) + duration
-    bid = {}
-    bid["user"] = user["id"]
-    bid["bid"] = price
+    auction = {"id": auction_id, "user": user["id"], "image": filename, "description": description,
+               "time": int(time()) + duration}
+    bid = {"user": user["id"], "bid": price}
     auction["bids"] = [bid]
     # Insert auction into database
     data.new_auction(auction, user['id'], auction_id)
@@ -184,7 +185,6 @@ def create_auction():
 #   "bid" = bid amount
 @app.get('/auction/<int:auction_id>')
 def auction_info(auction_id):
-    auction_id = int(auction_id)
     auction = data.find_auction_by_id(auction_id)
     if auction is not None:
         return jsonify(auction)
@@ -211,12 +211,8 @@ def allowed_auction_image(filename):
 
 # returns user if the user is logged in
 def is_logged_in(user_token):
-    if ss.token_exists(user_token):
-        user_id = int(ss.id_from_token(user_token))
-        user = data.find_user_by_id(user_id)
-    else:
-        user = None
-    return user
+    user_id = ss.id_from_token(user_token)  # -1 if user_token does not exist
+    return data.find_user_by_id(user_id)  # none if user user_id does not exist
 
 
 if __name__ == "__main__":
