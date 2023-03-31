@@ -30,9 +30,9 @@ def new_user():
         return "Username Taken"
     pw_hash = ss.pw_hash(password)
     data.new_user(username, pw_hash)
+
     user = data.find_user_by_username(username)
-    response = login_response(user)
-    return response
+    return login_response(user)
 
 
 # checks for matching username/password pair, redirects to home and sets cookie
@@ -54,8 +54,7 @@ def returning_user():
     if is_logged_in(user_token):
         ss.remove_token(user_token)
 
-    response = login_response(user)
-    return response
+    return login_response(user)
 
 
 def login_response(user):
@@ -68,6 +67,9 @@ def login_response(user):
 # route to view user info by ID - returns plaintext for now
 @app.get('/user/<user_id>')
 def user_info(user_id):
+    token = request.cookies.get("token")
+    if not is_logged_in(token):
+        return redirect('/')
     user = data.find_user_by_id(user_id)
     if user is not None:
         return str({"id": user["id"], "username": user["username"], "password": user["password"]})
@@ -87,8 +89,7 @@ def log_out():
 @app.get('/home')
 def home():
     user_token = request.cookies.get("token")
-    user = is_logged_in(user_token)
-    if user:
+    if is_logged_in(user_token):
         return render_template('home.html')
     return redirect('/')
 
@@ -185,6 +186,9 @@ def create_auction():
 #   "bid" = bid amount
 @app.get('/auction/<int:auction_id>')
 def auction_info(auction_id):
+    token = request.cookies.get("token")
+    if not is_logged_in(token):
+        return redirect('/')
     auction = data.find_auction_by_id(auction_id)
     if auction is not None:
         return jsonify(auction)
@@ -193,12 +197,18 @@ def auction_info(auction_id):
 # JSON list of all auctions
 @app.get('/auctions')
 def auction_list():
+    token = request.cookies.get("token")
+    if not is_logged_in(token):
+        return redirect('/')
     return jsonify(list(data.all_auctions()))
 
 
 # Get an image
 @app.get("/item/<path:filename>")
 def item_image(filename):
+    token = request.cookies.get("token")
+    if not is_logged_in(token):
+        return redirect('/')
     response = send_from_directory("item", filename)
     response.headers["X-Content-Type-Options"] = "nosniff"
     return response
