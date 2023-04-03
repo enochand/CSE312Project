@@ -228,7 +228,7 @@ def change_username():
     if data.find_user_by_username(user["username"]):
         return "Username Taken"
     data.update_user_by_id(user)
-    return "Username Updated Successfully"
+    return "Username Updated"
 
 
 def allowed_auction_image(filename):

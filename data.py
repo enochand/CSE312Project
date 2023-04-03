@@ -46,6 +46,7 @@ def all_auctions():
 
 # takes in a new user (callable the same way as a python dict)
 # updates the username and/or password of the user(found by the id)
+# ???
 # user id cannot be changed
 def update_user_by_id(user):
     return users.replace_one(
