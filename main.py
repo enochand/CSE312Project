@@ -65,14 +65,15 @@ def login_response(user):
 
 
 # route to view user info by ID - returns plaintext for now
-@app.get('/user/<user_id>')
+@app.get('/user/<int:user_id>')
 def user_info(user_id):
     token = request.cookies.get("token")
     if not is_logged_in(token):
         return redirect('/')
     user = data.find_user_by_id(user_id)
     if user is not None:
-        return str({"id": user["id"], "username": user["username"], "password": user["password"]})
+        return jsonify(str(user))
+    return "User not found"
 
 
 # clears cookies and redirects to login page
@@ -192,6 +193,7 @@ def auction_info(auction_id):
     auction = data.find_auction_by_id(auction_id)
     if auction is not None:
         return jsonify(auction)
+    return "Auction Not Found"
 
 
 # JSON list of all auctions
@@ -212,6 +214,21 @@ def item_image(filename):
     response = send_from_directory("item", filename)
     response.headers["X-Content-Type-Options"] = "nosniff"
     return response
+
+
+# changes the username of a user
+# has to be requested by that user, and user has to be logged in
+@app.post("/change_username")
+def change_username():
+    token = request.cookies.get("token")
+    user = is_logged_in(token)
+    if not user:
+        return redirect("/")
+    user["username"] = request.form["new_username"]
+    if data.find_user_by_username(user["username"]):
+        return "Username Taken"
+    data.update_user_by_id(user)
+    return "Username Updated Successfully"
 
 
 def allowed_auction_image(filename):

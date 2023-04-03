@@ -13,17 +13,17 @@ auctions = db["auctions"]
 
 
 def find_user_by_username(username):
-    return users.find_one({"username": username})
+    return users.find_one({"username": username}, {"_id": 0})
 
 
 def new_user(username, password):
-    counter.update_one({}, {"$inc": {"num_users": 1}})
     users.insert_one({"id": counter.find_one()["num_users"], "username": username, "password": password})
+    counter.update_one({}, {"$inc": {"num_users": 1}})
 
 
 # user_id can be a string or an int
 def find_user_by_id(user_id):
-    return users.find_one({"id": int(user_id)})
+    return users.find_one({"id": int(user_id)}, {"_id": 0})
 
 
 def next_auction_id():
@@ -42,3 +42,15 @@ def find_auction_by_id(auction_id):
 
 def all_auctions():
     return auctions.find({}, {"_id": 0})
+
+
+# takes in a new user (callable the same way as a python dict)
+# updates the username and/or password of the user(found by the id)
+# user id cannot be changed
+def update_user_by_id(user):
+    return users.replace_one(
+        {"id": user["id"]},
+        {"id": user["id"], "username": user["username"], "password": user["password"]})
+
+
+
