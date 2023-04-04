@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 
-# mongo_client = MongoClient('localhost')
-mongo_client = MongoClient('mongo')
+mongo_client = MongoClient('localhost')
+# mongo_client = MongoClient('mongo')
 db = mongo_client['excaliber']
 users = db['users']
 counter = db["counter"]
@@ -34,6 +34,11 @@ def next_auction_id():
 def new_auction(auction, user_id, auction_id):
     auctions.insert_one(auction)
     users.update_one({"id": int(user_id)}, {"$push": {"auctions": int(auction_id)}})
+
+
+# Returns True if bid was pushed, False otherwise
+def push_bid(auction, user, bid):
+    return 1 == auctions.update_one({"id": auction, "highest_bid": {"$lt": bid}}, {"$set": {"highest_bidder": user, "highest_bid": bid}}).modified_count
 
 
 def find_auction_by_id(auction_id):

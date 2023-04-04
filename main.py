@@ -106,7 +106,14 @@ def create_auction_page():
     return render_template("create_auction.html")
 
 
-# Create new auction if logged in
+# Create new auction if logged in:
+# "id" = int id
+# "user" = user id of auction creator
+# "image" = image filename without path
+# "description" = description text
+# "time" = end date timestamp
+# "highest_bidder" = user id of highest bidder, will be creator if no one bids
+# "highest_bid" = highest bid (starts at starting price)
 @app.post('/create')
 def create_auction():
     # Redirect to login page if not logged in
@@ -167,24 +174,14 @@ def create_auction():
 
     # Create auction
     auction = {"id": auction_id, "user": user["id"], "image": filename, "description": description,
-               "time": int(time()) + duration}
-    bid = {"user": user["id"], "bid": price}
-    auction["bids"] = [bid]
+               "time": int(time()) + duration, "highest_bidder": user["id"], "highest_bid": price}
     # Insert auction into database
     data.new_auction(auction, user['id'], auction_id)
     # Redirect to auction display page
     return redirect("/auctions")
 
 
-# Get auction JSON by id:
-# "id" = int id
-# "user" = user id of auction creator
-# "image" = image filename without path
-# "description" = description text
-# "time" = end date timestamp
-# "bids" = list of bids:
-#   "user" = user id of bidder
-#   "bid" = bid amount
+# Get auction JSON by id
 @app.get('/auction/<int:auction_id>')
 def auction_info(auction_id):
     token = request.cookies.get("token")
@@ -243,4 +240,5 @@ def is_logged_in(user_token):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=8080)
+    print(data.push_bid(1, 0, 10))
+    # app.run(debug=True, host="0.0.0.0", port=8080)
