@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, send_from_directory, jsonify
 from time import time
 from sessions import Sessions
-import data
+import data, helper
 
 
 app = Flask(__name__)
@@ -28,9 +28,12 @@ def new_user():
     user = data.find_user_by_username(username)
     if user is not None:
         return "Username Taken"
+    if not helper.valid_username(username):
+        return "Username must be alphanumeric and between 3-20 characters long"
+    if not helper.valid_password(password):
+        return "Password must be 8-20 characters long"
     pw_hash = ss.pw_hash(password)
     data.new_user(username, pw_hash)
-
     user = data.find_user_by_username(username)
     return login_response(user)
 
