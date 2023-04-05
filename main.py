@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, redirect, send_from_directory, jsonify
 from time import time
 from sessions import Sessions
-import data, helper
+import data
+import helper
 
 
 app = Flask(__name__)
@@ -243,5 +244,4 @@ def is_logged_in(user_token):
 
 
 if __name__ == "__main__":
-    print(data.push_bid(1, 0, 10))
-    # app.run(debug=True, host="0.0.0.0", port=8080)
+    app.run(debug=True, host="0.0.0.0", port=8080)

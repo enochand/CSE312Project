@@ -7,15 +7,17 @@ def escape_html(data: str) -> str:
 def valid_username(username: str) -> bool:
     if not username.isalnum():
         return False
-    if not len(username) >= 3:
+    if len(username) < 3:
         return False
-    if not len(username) <= 20:
+    if len(username) > 20:
         return False
+    return True
 
 
 # returns true if password is 8 - 20 characters long
 def valid_password(password: str) -> bool:
-    if not len(password) >= 8:
+    if len(password) < 8:
         return False
-    if not len(password) <= 20:
+    if len(password) > 20:
         return False
+    return True
