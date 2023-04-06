@@ -74,9 +74,14 @@ def user_info(user_id):
     token = request.cookies.get("token")
     if not is_logged_in(token):
         return redirect('/')
-    user = data.find_user_by_id(user_id)
-    if user is not None:
-        return jsonify(str(user))
+    is_user = is_visited_user(token, user_id) # returns false if no user found
+    print("TOKEN:", token, ", USERID:", user_id)
+    user_id = data.find_user_by_id(user_id)
+    if user_id is not None:
+        user_template = render_template('profile.html', is_user=is_user, 
+                                                        username=user_id["username"]
+                                                        )
+        return user_template
     return "User not found"
 
 
@@ -234,7 +239,7 @@ def change_username():
 
 def allowed_auction_image(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in {"png", "jpg", "jpeg"}
+        filename.rsplit('.', 1)[1].lower() in {"png", "jpg", "jpeg"}
 
 
 # returns user if the user is logged in
@@ -242,6 +247,10 @@ def is_logged_in(user_token):
     user_id = ss.id_from_token(user_token)  # -1 if user_token does not exist
     return data.find_user_by_id(user_id)  # none if user user_id does not exist
 
+# returns true if the token of the user matches the token of the visited user page
+def is_visited_user(user_token, visited_user):
+    user_id = ss.id_from_token(user_token)  # -1 if user_token does not exist
+    return data.find_user_by_id(user_id)["id"] == visited_user  # true if the token matches
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=8080)
+    app.run(debug=False, host="0.0.0.0", port=8080)
