@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+</head>
+<body>
+<h1>{{ username }}'s Profile</h1>
+
+<!--
+    Change password
+    Change username
+    Auctions the user posted
+    Auctions the user has won/purchased
+-->
+
+{% if is_user %}
+
+<h1>Change Password</h1>
+    <form action="/change_password" id="change_password" method="post">
+        <label for="new_password">Username: </label>
+        <input id="new_password" type="text" name="new_password">
+        <input type="submit" value="change_password">
+    </form>
+
+<h1>Change Username</h1>
+    <form action="/change_username" id="change_username" method="post">
+        <label for="new_username">Username: </label>
+        <input id="new_username" type="text" name="new_username">
+        <input type="submit" value="change_username">
+    </form>
+
+<h1>Auctions Posted</h1>
+
+    {% for auction in posted_auctions %}
+        <p>{{ auction }}</p>
+    {% endfor %}
+
+<h1>Auctions Won</h1>
+
+    {% for auction in won_auctions %}
+        <p>{{ auction }}</p>
+    {% endfor %}
+
+<h1>Auctions Purchased</h1>
+
+    {% for auction in won_auctions %}
+        <p>{{ auction }}</p>
+    {% endfor %}
+
+{% else %}
+
+<h1>Auctions Posted</h1>
+
+    {% for auction in posted_auctions %}
+        <p>{{ auction }}</p>
+    {% endfor %}
+
+<h1>Auctions Won</h1>
+
+    {% for auction in won_auctions %}
+        <p>{{ auction }}</p>
+    {% endfor %}
+
+<h1>Auctions Purchased</h1>
+
+    {% for auction in won_auctions %}
+        <p>{{ auction }}</p>
+    {% endfor %}
+
+{% endif %}
+</body>
+</html>
