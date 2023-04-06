@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, send_from_directory, jsonify
+from flask import Flask, render_template, request, redirect, send_from_directory, jsonify, escape
 from time import time
 from sessions import Sessions
 import data
@@ -24,8 +24,8 @@ def landing():
 # route for creating new user, called in index.html
 @app.post('/signup')
 def new_user():
-    username = request.form['new_username']
-    password = request.form['new_password']
+    username = escape(request.form['new_username'])
+    password = escape(request.form['new_password'])
     user = data.find_user_by_username(username)
     if user is not None:
         return "Username Taken"
@@ -75,7 +75,6 @@ def user_info(user_id):
     if not is_logged_in(token):
         return redirect('/')
     is_user = is_visited_user(token, user_id) # returns false if no user found
-    print("TOKEN:", token, ", USERID:", user_id)
     user_id = data.find_user_by_id(user_id)
     if user_id is not None:
         user_template = render_template('profile.html', is_user=is_user, 
