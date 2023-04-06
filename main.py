@@ -43,12 +43,12 @@ def new_user():
 @app.post('/login')
 def returning_user():
     # exit function if username is not a user
-    username = request.form['username']
+    username = escape(request.form['username'])
     user = data.find_user_by_username(username)
     
     if not user:
         return "Invalid Username or Password"
-    password = request.form['password']
+    password = escape(request.form['password'])
     # exit function if password does not match
     if not ss.correct_pw(user['password'], password):
         return "Invalid Username or Password"
