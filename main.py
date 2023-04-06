@@ -180,6 +180,9 @@ def create_auction():
     filename = "item" + str(auction_id) + extension
     file.save("item/" + filename)
 
+    # HTML escape description
+    description = escape(description)
+
     # Create auction
     auction = {"id": auction_id, "user": user["id"], "image": filename, "description": description,
                "time": int(time()) + duration, "highest_bidder": user["id"], "highest_bid": price}
