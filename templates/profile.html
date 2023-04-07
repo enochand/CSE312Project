@@ -32,41 +32,65 @@
 
 <h1>Auctions Posted</h1>
 
+    <ul>
     {% for auction in posted_auctions %}
-        <p>{{ auction }}</p>
+        <li>{{ auction }}</li>
+    {% else %}
+        <li>No auctions found</li>
     {% endfor %}
+    </ul>
 
 <h1>Auctions Won</h1>
 
+    <ul>
     {% for auction in won_auctions %}
-        <p>{{ auction }}</p>
+        <li>{{ auction }}</li>
+    {% else %}
+        <li>No auctions found</li>
     {% endfor %}
+    </ul>
 
 <h1>Auctions Purchased</h1>
 
-    {% for auction in won_auctions %}
-        <p>{{ auction }}</p>
+    <ul>
+    {% for auction in purchased_auctions %}
+        <li>{{ auction }}</li>
+    {% else %}
+        <li>No auctions found</li>
     {% endfor %}
+    </ul>
 
 {% else %}
 
 <h1>Auctions Posted</h1>
 
+    <ul>
     {% for auction in posted_auctions %}
-        <p>{{ auction }}</p>
+        <li>{{ auction }}</li>
+    {% else %}
+        <li>No auctions found</li>
     {% endfor %}
+    </ul>
 
 <h1>Auctions Won</h1>
 
+    <ul>
     {% for auction in won_auctions %}
-        <p>{{ auction }}</p>
+        <li>{{ auction }}</li>
+    {% else %}
+        <li>No auctions found</li>
     {% endfor %}
+    </ul>
 
 <h1>Auctions Purchased</h1>
 
-    {% for auction in won_auctions %}
-        <p>{{ auction }}</p>
+    <ul>
+    {% for auction in purchased_auctions %}
+        <li>{{ auction }}</li>
+    {% else %}
+        <li>No auctions found</li>
     {% endfor %}
+    </ul>
 
 {% endif %}
 </body>

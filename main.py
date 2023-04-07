@@ -76,10 +76,11 @@ def user_info(user_id):
         return redirect('/')
     is_user = is_visited_user(token, user_id) # returns false if no user found
     user_id = data.find_user_by_id(user_id)
+    posted_auctions = user_id["auctions"]
     if user_id is not None:
         user_template = render_template('profile.html', is_user=is_user, 
-                                                        username=user_id["username"]
-                                                        )
+                                                        username=user_id["username"],
+                                                        posted_auctions=user_id["auctions"])
         return user_template
     return "User not found"
 
