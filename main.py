@@ -1,10 +1,13 @@
 from flask import Flask, render_template, request, redirect, send_from_directory, jsonify
-from time import time
+from time import time, sleep
 from sessions import Sessions
 import data
+from flask_sock import Sock, ConnectionClosed
+import json
 
 
 app = Flask(__name__)
+sock = Sock(app)
 ss = Sessions(app)  # refer to session.py
 app.config["MAX_CONTENT_PATH"] = 1000000  # 1 MB
 
@@ -212,6 +215,49 @@ def item_image(filename):
     response = send_from_directory("item", filename)
     response.headers["X-Content-Type-Options"] = "nosniff"
     return response
+
+#This is the auctions page that will have a WS connection
+@app.get('/auctions_page')
+def returnAuctionsPage():
+    # check cookies; if logged in take to home page
+    # user_token = request.cookies.get("token")
+    # user = is_logged_in(user_token)
+    # if not user:
+    #     return render_template("index.html")
+    return render_template("auctions_page.html")
+
+#send js for auctions_page
+@app.get("/js/<path:filename>")
+def returnJSFiles(filename):
+    filename = filename.replace('/', '')# making it so sender can't leave directory they requested
+    response = send_from_directory("JavaScript", filename)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
+
+
+
+@sock.route('/websockets')
+def websockets(sock):
+    """This function adds the client to the Sessions.web_sockets list, and keeps the the TCP connection alive
+       until the client closes the connection.  If multiple clients with the same user_token attempt to connect
+       this function trows and Exception."""
+    user_token = request.cookies.get("token")
+    if Sessions.web_sockets.get(user_token, None) != None:
+        print('Token alredy in dictionary')
+        raise Exception('Multiple people with the same token tried to join websockets')
+    Sessions.web_sockets[user_token] = sock
+    print(f'{user_token} joined websockets!')
+    print(Sessions.web_sockets)
+    while True:
+        try: 
+            data = sock.receive()
+        except ConnectionClosed:
+            Sessions.web_sockets.pop(user_token, None)
+            print(f'{user_token} left websockets!')
+            break
+        for sock in Sessions.web_sockets.values():
+            sock.send(data)
+
 
 
 def allowed_auction_image(filename):

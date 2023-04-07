@@ -10,9 +10,12 @@ The __user_tokens dict can(and most likely will) be modified to include function
 
 
 class Sessions:
+    #key = token, value = socket connection
+    web_sockets = {} #this will hold all the web sockets that are connected, for brodcast operation
     def __init__(self, app):
         self.__bcrypt = Bcrypt(app)
         self.__user_tokens = {}
+
 
     # returns a hashed version of the password(raw string)
     def pw_hash(self, password):
