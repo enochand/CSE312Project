@@ -18,7 +18,8 @@ def find_user_by_username(username):
 
 
 def new_user(username, password):
-    users.insert_one({"id": counter.find_one()["num_users"], "username": username, "password": password, "auctions":[]})
+    users.insert_one({"id": counter.find_one()["num_users"],
+                      "username": username, "password": password, "auctions": []})
     counter.update_one({}, {"$inc": {"num_users": 1}})
 
 

@@ -4,7 +4,6 @@ from sessions import Sessions
 import data
 import helper
 
-
 app = Flask(__name__)
 ss = Sessions(app)  # refer to session.py
 app.config["MAX_CONTENT_PATH"] = 1000000  # 1 MB
@@ -24,8 +23,8 @@ def landing():
 # route for creating new user, called in index.html
 @app.post('/signup')
 def new_user():
-    username = escape(request.form['new_username'])
-    password = escape(request.form['new_password'])
+    username = request.form['new_username']
+    password = request.form['new_password']
     user = data.find_user_by_username(username)
     if user is not None:
         return "Username Taken"
@@ -45,14 +44,14 @@ def returning_user():
     # exit function if username is not a user
     username = escape(request.form['username'])
     user = data.find_user_by_username(username)
-    
+
     if not user:
         return "Invalid Username or Password"
     password = escape(request.form['password'])
     # exit function if password does not match
     if not ss.correct_pw(user['password'], password):
         return "Invalid Username or Password"
-    
+
     # log out of current account
     user_token = request.cookies.get("token")
     if is_logged_in(user_token):
@@ -74,13 +73,13 @@ def user_info(user_id):
     token = request.cookies.get("token")
     if not is_logged_in(token):
         return redirect('/')
-    is_user = is_visited_user(token, user_id) # returns false if no user found
+    is_user = is_visited_user(token, user_id)  # returns false if no user found
     user_id = data.find_user_by_id(user_id)
     posted_auctions = user_id["auctions"]
     if user_id is not None:
-        user_template = render_template('profile.html', is_user=is_user, 
-                                                        username=user_id["username"],
-                                                        posted_auctions=user_id["auctions"])
+        user_template = render_template('profile.html', is_user=is_user,
+                                        username=user_id["username"],
+                                        posted_auctions=user_id["auctions"])
         return user_template
     return "User not found"
 
@@ -111,7 +110,7 @@ def create_auction_page():
     user = is_logged_in(request.cookies.get("token"))
     if user is None:  # Not logged in
         return redirect("/")
-    
+
     return render_template("create_auction.html")
 
 
@@ -129,16 +128,16 @@ def create_auction():
     user = is_logged_in(request.cookies.get("token"))
     if user is None:  # Not logged in
         return redirect("/")
-    
+
     # Verify form elements are present
     elements = ["description", "duration", "price"]
     for e in elements:
         if e not in request.form:
             return "Missing form elements"
-        
+
     if "image" not in request.files:
         return "Missing image element"
-    
+
     file = request.files["image"]
     if file.filename == "":
         return "No selected file"
@@ -147,7 +146,7 @@ def create_auction():
     description = request.form["description"]
     if description == "":
         return "Description must not be empty"
-    
+
     # Verify the description is not too long
     if len(description) > 100:
         return "Description must not be greater than 100 characters"
@@ -157,21 +156,21 @@ def create_auction():
         duration = int(request.form["duration"])
     except ValueError:
         return "Duration is not an integer"
-    
+
     try:
         price = int(request.form["price"])
     except ValueError:
         return "Price is not an integer"
-    
+
     # Verify numeric elements are not negative
     if duration < 0:
         return "Duration must not be negative"
-    
+
     if price < 0:
         return "Price must not be negative"
-    
+
     # Verify file is of an allowed file extension
-    allowed_auction_image(file.filename)
+    helper.allowed_auction_image(file.filename)
     extension = "." + file.filename.rsplit('.', 1)[1].lower()
 
     # Get next auction id
@@ -240,20 +239,17 @@ def change_username():
     return "Username Updated"
 
 
-def allowed_auction_image(filename):
-    return '.' in filename and \
-        filename.rsplit('.', 1)[1].lower() in {"png", "jpg", "jpeg"}
-
-
 # returns user if the user is logged in
 def is_logged_in(user_token):
     user_id = ss.id_from_token(user_token)  # -1 if user_token does not exist
     return data.find_user_by_id(user_id)  # none if user user_id does not exist
 
+
 # returns true if the token of the user matches the token of the visited user page
 def is_visited_user(user_token, visited_user):
     user_id = ss.id_from_token(user_token)  # -1 if user_token does not exist
     return data.find_user_by_id(user_id)["id"] == visited_user  # true if the token matches
+
 
 if __name__ == "__main__":
     app.run(debug=False, host="0.0.0.0", port=8080)
