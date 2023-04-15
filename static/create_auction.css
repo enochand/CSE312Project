@@ -1,0 +1,118 @@
+* {
+    box-sizing: border-box;
+  }
+  
+  body {
+    background: #152152;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    background-color: #00125D;
+    height: 750px;
+    width: 100%;
+    position: relative;
+    float: left;
+    z-index: -1;
+  }
+  
+  .header img {
+    height: 100%;
+    width: 100%;
+    opacity: 0.5;
+    object-fit: cover;
+  }
+  
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    background: #FFFAF8;
+    width:25%;
+    text-align: left;
+    position: absolute;
+    z-index: 0;
+    padding: 2.5% 5% 2.5% 5%;
+  
+    font-family: 'Noto Serif', serif;
+    color: #152152;
+    border-radius: 30px;
+    overflow: scroll;
+  }
+  
+  form h1 {
+    font-size: 26px;
+  }
+  
+  form label {
+    font-size: 18px;
+  }
+  
+  form a {
+    color: #09112f;
+  }
+  
+  .designed-file-button::-webkit-file-upload-button {
+    visibility: hidden;
+  }
+  
+  input::file-selector-button {
+    background: #152152;
+    font-size: 16px;
+    font-family: 'Noto Serif', serif;
+    color: #F1D58B;
+    padding: 1% 6% 1%6%;
+    
+    border: thin solid #152152;
+    border-radius: 10px;
+  }
+  
+  input::file-selector-button:hover {
+    background: #09112f;
+    color: white;
+    cursor: pointer;
+  }
+  
+  [type="submit"] {
+    background: #152152;
+    font-size: 18px;
+    font-family: 'Noto Serif', serif;
+    color: #F1D58B;
+    
+    border-radius: 10px;
+    border: 0px;
+    padding: 3% 10% 3% 10%;
+  }
+  
+  [type="submit"]:hover {
+    background: #09112f;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .line-break {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    
+    background-color: #152152;
+    width: 100%;
+    float: left;
+    height: 100px;
+  }
+  
+  .line-break h1 {
+    text-align: center;
+    letter-spacing: 1.2px;
+    font-size: 56px;
+    font-family: 'Oranienbaum', serif;
+    color: #F1D58B;
+  }
+  
