@@ -47,7 +47,7 @@ def returning_user():
 
     if not user:
         return "Invalid Username or Password"
-    password = escape(request.form['password'])
+    password = request.form['password']
     # exit function if password does not match
     if not ss.correct_pw(user['password'], password):
         return "Invalid Username or Password"
@@ -74,12 +74,11 @@ def user_info(user_id):
     if not is_logged_in(token):
         return redirect('/')
     is_user = is_visited_user(token, user_id)  # returns false if no user found
-    user_id = data.find_user_by_id(user_id)
-    posted_auctions = user_id["auctions"]
-    if user_id is not None:
+    user = data.find_user_by_id(user_id)
+    if user:
         user_template = render_template('profile.html', is_user=is_user,
-                                        username=user_id["username"],
-                                        posted_auctions=user_id["auctions"])
+                                        username=user["username"],
+                                        posted_auctions=user["auctions"])
         return user_template
     return "User not found"
 
@@ -235,8 +234,28 @@ def change_username():
     user["username"] = request.form["new_username"]
     if data.find_user_by_username(user["username"]):
         return "Username Taken"
-    data.update_user_by_id(user)
+    elif not helper.valid_username(user["username"]):
+        return "Invalid Username"
+    data.update_user(user)
     return "Username Updated"
+
+
+# updates all auction info. if you don't want to update something, leave it as an empty string or None
+@app.post("/update_auction")
+def update_auction():
+    token = request.cookies.get("token")
+    user = is_logged_in(token)
+    if not user:
+        return redirect("/")
+    auction_id = request.form["auction_id"]
+    if auction_id not in user["auctions"]:
+        return "You do not have permissions to edit other people's auctions"
+    image = request.files.get("image")
+    description = request.form.get("description")
+    highest_bidder = request.form.get("highest_bidder")
+    highest_bid = request.form.get("highest_bid")
+    auction = {"image": image, "description": description, "highest_bidder": highest_bidder, "highest_bid": highest_bid}
+    data.update_auction_by_id(auction_id, auction)
 
 
 # returns user if the user is logged in
@@ -247,8 +266,7 @@ def is_logged_in(user_token):
 
 # returns true if the token of the user matches the token of the visited user page
 def is_visited_user(user_token, visited_user):
-    user_id = ss.id_from_token(user_token)  # -1 if user_token does not exist
-    return data.find_user_by_id(user_id)["id"] == visited_user  # true if the token matches
+    return is_logged_in(user_token)["id"] == visited_user  # true if the token matches
 
 
 if __name__ == "__main__":

@@ -56,10 +56,19 @@ def all_auctions():
 # updates the username and/or password of the user(found by the id)
 # user id cannot be changed
 # returns new user
-def update_user_by_id(user):
+def update_user(user):
     return users.replace_one(
         {"id": user["id"]},
         {"id": user["id"], "username": user["username"], "password": user["password"], "auctions": user["auctions"]})
 
 
-
+def update_auction_by_id(auction_id, auction):
+    # UPDATE IMAGES NOT IMPLEMENTED YET
+    # if auction["image"] and auction["image"] != "":
+    #     auctions.find_one_and_update({"id": auction_id}, {"$set": {"image": auction["image"]}})
+    if auction["description"] and auction["description"] != "":
+        auctions.find_one_and_update({"id": auction_id}, {"$set": {"description": auction["description"]}})
+    if auction["highest_bidder"] and auction["highest_bidder"] != "":
+        auctions.find_one_and_update({"id": auction_id}, {"$set": {"highest_bidder": auction["highest_bidder"]}})
+    if auction["highest_bid"] and auction["highest_bid"] != "":
+        auctions.find_one_and_update({"id": auction_id}, {"$set": {"highest_bid": auction["highest_bid"]}})
