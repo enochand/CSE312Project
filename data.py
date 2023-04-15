@@ -72,3 +72,9 @@ def update_auction_by_id(auction_id, auction):
         auctions.find_one_and_update({"id": auction_id}, {"$set": {"highest_bidder": auction["highest_bidder"]}})
     if auction["highest_bid"] and auction["highest_bid"] != "":
         auctions.find_one_and_update({"id": auction_id}, {"$set": {"highest_bid": auction["highest_bid"]}})
+
+
+# To be called by the timer that controls ending auctions
+# Returns user_id of whoever won
+def end_auction(auction_id):
+    pass
