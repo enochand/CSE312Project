@@ -167,9 +167,16 @@ def create_auction():
     filename = "item" + str(auction_id) + extension
     file.save("item/" + filename)
 
+    #get username
+    username = data.get_username_by_id(user["id"])
+
     # Create auction
-    auction = {"id": auction_id, "user": user["id"], "image": filename, "description": description,
-               "time": int(time()) + duration}
+    auction = {"id": auction_id,        # id: ID of the auction
+        "user": user["id"],             # user: The id for the user who made the auction 
+        "username": username,           # username of person who made the auction
+        "image": filename,              # image: The image for the item up for auction
+        "description": description,     # description: The description of the item up for auction
+        "time": int(time()) + duration} # time: The time the auction is set to end
     bid = {"user": user["id"], "bid": price}
     auction["bids"] = [bid]
     # Insert auction into database
@@ -242,21 +249,32 @@ def websockets(sock):
        until the client closes the connection.  If multiple clients with the same user_token attempt to connect
        this function trows and Exception."""
     user_token = request.cookies.get("token")
-    if Sessions.web_sockets.get(user_token, None) != None:
-        print('Token alredy in dictionary')
-        raise Exception('Multiple people with the same token tried to join websockets')
+    
+    # if Sessions.web_sockets.get(user_token, None) != None:
+    #     print('Token alredy in dictionary')
+    #     #TODO SEND A MESSAGE BACK SAYING WS SOCKET CONNECTION ISN'T GOOD, THEN RETURN
+    #     raise Exception('Multiple people with the same token tried to join websockets')
     Sessions.web_sockets[user_token] = sock
-    print(f'{user_token} joined websockets!')
-    print(Sessions.web_sockets)
+    
+    #sending all the current auctions
+    auctions = list(data.all_auctions())
+    message = {'messageType': 'auctionsList', 'auctions': auctions}
+    message = json.dumps(message)
+    sock.send(message)
+    
+    # enter while true for persistent socket connection
     while True:
         try: 
-            data = sock.receive()
-        except ConnectionClosed:
+            WSmessage = sock.receive()
+            WSmessage = json.loads(WSmessage)
+        except:
             Sessions.web_sockets.pop(user_token, None)
             print(f'{user_token} left websockets!')
-            break
-        for sock in Sessions.web_sockets.values():
-            sock.send(data)
+            break  # break out of infinite while loop
+        messageType = WSmessage.get('messageType', None)
+        if messageType == 'identifyMe':
+            message = {'messageType': 'identity', 'token': user_token}
+
 
 
 
@@ -272,4 +290,4 @@ def is_logged_in(user_token):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8080)

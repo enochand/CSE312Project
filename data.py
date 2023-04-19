@@ -20,6 +20,9 @@ def new_user(username, password):
     counter.update_one({}, {"$inc": {"num_users": 1}})
     users.insert_one({"id": counter.find_one()["num_users"], "username": username, "password": password})
 
+def get_username_by_id(id: int):
+    results = find_user_by_id(id)
+    return results.get('username', None)
 
 # user_id can be a string or an int
 def find_user_by_id(user_id):

@@ -1,5 +1,4 @@
-sock = cla
-tst = {'one':}
+x = 1
 
-if tst.get('one'):
-    print(True)
+print(vars(x))
+print(dir(x))
