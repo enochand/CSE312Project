@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, redirect, send_from_directory, jsonify
+from flask import Flask, render_template, request, redirect, send_from_directory, jsonify, escape
 from time import time, sleep
 from sessions import Sessions
 import data
 from flask_sock import Sock, ConnectionClosed
 import json
+import helper
 
 
 app = Flask(__name__)
@@ -31,9 +32,12 @@ def new_user():
     user = data.find_user_by_username(username)
     if user is not None:
         return "Username Taken"
+    if not helper.valid_username(username):
+        return "Username must be alphanumeric and between 3-20 characters long"
+    if not helper.valid_password(password):
+        return "Password must be 8-20 characters long"
     pw_hash = ss.pw_hash(password)
     data.new_user(username, pw_hash)
-
     user = data.find_user_by_username(username)
     return login_response(user)
 
@@ -42,16 +46,16 @@ def new_user():
 @app.post('/login')
 def returning_user():
     # exit function if username is not a user
-    username = request.form['username']
+    username = escape(request.form['username'])
     user = data.find_user_by_username(username)
-    
+
     if not user:
         return "Invalid Username or Password"
     password = request.form['password']
     # exit function if password does not match
     if not ss.correct_pw(user['password'], password):
         return "Invalid Username or Password"
-    
+
     # log out of current account
     user_token = request.cookies.get("token")
     if is_logged_in(user_token):
@@ -68,14 +72,19 @@ def login_response(user):
 
 
 # route to view user info by ID - returns plaintext for now
-@app.get('/user/<user_id>')
+@app.get('/user/<int:user_id>')
 def user_info(user_id):
     token = request.cookies.get("token")
     if not is_logged_in(token):
         return redirect('/')
+    is_user = is_visited_user(token, user_id)  # returns false if no user found
     user = data.find_user_by_id(user_id)
-    if user is not None:
-        return str({"id": user["id"], "username": user["username"], "password": user["password"]})
+    if user:
+        user_template = render_template('profile.html', is_user=is_user,
+                                        username=user["username"],
+                                        posted_auctions=user["auctions"])
+        return user_template
+    return "User not found"
 
 
 # clears cookies and redirects to login page
@@ -104,27 +113,34 @@ def create_auction_page():
     user = is_logged_in(request.cookies.get("token"))
     if user is None:  # Not logged in
         return redirect("/")
-    
+
     return render_template("create_auction.html")
 
 
-# Create new auction if logged in
+# Create new auction if logged in:
+# "id" = int id
+# "user" = user id of auction creator
+# "image" = image filename without path
+# "description" = description text
+# "time" = end date timestamp
+# "highest_bidder" = user id of highest bidder, will be creator if no one bids
+# "highest_bid" = highest bid (starts at starting price)
 @app.post('/create')
 def create_auction():
     # Redirect to login page if not logged in
     user = is_logged_in(request.cookies.get("token"))
     if user is None:  # Not logged in
         return redirect("/")
-    
+
     # Verify form elements are present
     elements = ["description", "duration", "price"]
     for e in elements:
         if e not in request.form:
             return "Missing form elements"
-        
+
     if "image" not in request.files:
         return "Missing image element"
-    
+
     file = request.files["image"]
     if file.filename == "":
         return "No selected file"
@@ -133,7 +149,7 @@ def create_auction():
     description = request.form["description"]
     if description == "":
         return "Description must not be empty"
-    
+
     # Verify the description is not too long
     if len(description) > 100:
         return "Description must not be greater than 100 characters"
@@ -143,21 +159,21 @@ def create_auction():
         duration = int(request.form["duration"])
     except ValueError:
         return "Duration is not an integer"
-    
+
     try:
         price = int(request.form["price"])
     except ValueError:
         return "Price is not an integer"
-    
+
     # Verify numeric elements are not negative
     if duration < 0:
         return "Duration must not be negative"
-    
+
     if price < 0:
         return "Price must not be negative"
-    
+
     # Verify file is of an allowed file extension
-    allowed_auction_image(file.filename)
+    helper.allowed_auction_image(file.filename)
     extension = "." + file.filename.rsplit('.', 1)[1].lower()
 
     # Get next auction id
@@ -185,15 +201,7 @@ def create_auction():
     return redirect("/auctions")
 
 
-# Get auction JSON by id:
-# "id" = int id
-# "user" = user id of auction creator
-# "image" = image filename without path
-# "description" = description text
-# "time" = end date timestamp
-# "bids" = list of bids:
-#   "user" = user id of bidder
-#   "bid" = bid amount
+# Get auction JSON by id
 @app.get('/auction/<int:auction_id>')
 def auction_info(auction_id):
     token = request.cookies.get("token")
@@ -202,6 +210,7 @@ def auction_info(auction_id):
     auction = data.find_auction_by_id(auction_id)
     if auction is not None:
         return jsonify(auction)
+    return "Auction Not Found"
 
 
 # JSON list of all auctions
@@ -278,15 +287,50 @@ def websockets(sock):
 
 
 
-def allowed_auction_image(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in {"png", "jpg", "jpeg"}
+# changes the username of a user
+# has to be requested by that user, and user has to be logged in
+@app.post("/change_username")
+def change_username():
+    token = request.cookies.get("token")
+    user = is_logged_in(token)
+    if not user:
+        return redirect("/")
+    user["username"] = request.form["new_username"]
+    if data.find_user_by_username(user["username"]):
+        return "Username Taken"
+    elif not helper.valid_username(user["username"]):
+        return "Invalid Username"
+    data.update_user(user)
+    return "Username Updated"
+
+
+# updates all auction info. if you don't want to update something, leave it as an empty string or None
+@app.post("/update_auction")
+def update_auction():
+    token = request.cookies.get("token")
+    user = is_logged_in(token)
+    if not user:
+        return redirect("/")
+    auction_id = request.form["auction_id"]
+    if auction_id not in user["auctions"]:
+        return "You do not have permissions to edit other people's auctions"
+    image = request.files.get("image")
+    description = request.form.get("description")
+    highest_bidder = request.form.get("highest_bidder")
+    highest_bid = request.form.get("highest_bid")
+    auction = {"image": image, "description": description, "highest_bidder": highest_bidder, "highest_bid": highest_bid}
+    data.update_auction_by_id(auction_id, auction)
 
 
 # returns user if the user is logged in
 def is_logged_in(user_token):
     user_id = ss.id_from_token(user_token)  # -1 if user_token does not exist
     return data.find_user_by_id(user_id)  # none if user user_id does not exist
+
+
+# returns true if the token of the user matches the token of the visited user page
+def is_visited_user(user_token, visited_user):
+    return is_logged_in(user_token)["id"] == visited_user  # true if the token matches
 
 
 if __name__ == "__main__":
