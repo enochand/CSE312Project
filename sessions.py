@@ -1,5 +1,6 @@
 from flask_bcrypt import Bcrypt
 from secrets import token_urlsafe
+from data import tokens
 
 """
 The Sessions class is used for managing bcrypt(used for encrypting passwords for mongodb) and 
@@ -9,10 +10,32 @@ The __user_tokens dict can(and most likely will) be modified to include function
 """
 
 
+def token_exists(user_token):
+    return tokens.find_one({"token": user_token})
+
+
+def remove_token(user_token):
+    tokens.update_one({"token": user_token}, {"$set": {"token": ""}})
+
+
+def id_from_token(user_token):
+    try:
+        return token_exists(user_token)["id"]
+    except:
+        return "-1"
+
+
+def generate_user_token(user_id):
+    user_token = token_urlsafe(20)
+    while token_exists(user_token):
+        user_token = token_urlsafe(20)
+    tokens.insert_one({"token": user_token, "id": int(user_id)})
+    return user_token
+
+
 class Sessions:
     def __init__(self, app):
         self.__bcrypt = Bcrypt(app)
-        self.__user_tokens = {}
 
     # returns a hashed version of the password(raw string)
     def pw_hash(self, password):
@@ -25,21 +48,4 @@ class Sessions:
     def correct_pw(self, stored, to_check):
         return self.__bcrypt.check_password_hash(stored, to_check)
 
-    def remove_token(self, user_token):
-        self.__user_tokens.pop(user_token)
-
-    def token_exists(self, user_token):
-        return user_token in self.__user_tokens.keys()
-
-    def id_from_token(self, user_token):
-        if self.token_exists(user_token):
-            return self.__user_tokens[user_token]
-        return "-1"
-
     # returns UNIQUE token and adds token to user_tokens
-    def generate_user_token(self, user_id):
-        user_token = token_urlsafe(20)
-        while user_token in self.__user_tokens.keys():
-            user_token = token_urlsafe(20)
-        self.__user_tokens[user_token] = user_id
-        return user_token

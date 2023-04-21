@@ -11,6 +11,7 @@ auction_counter = db["auction_counter"]
 if "auction_counter" not in db.list_collection_names():
     auction_counter.insert_one({"count": 0})
 auctions = db["auctions"]
+tokens = db["tokens"]
 
 
 def find_user_by_username(username):
