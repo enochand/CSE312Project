@@ -44,10 +44,7 @@ def new_auction(auction, user_id, auction_id):
 
 # Returns True if bid was pushed, False otherwise
 def push_bid(auction:int, username:str, bid:int):
-    auction = find_auction_by_id(auction)
-    if not auction or auction.get('time', -1) < time():#if id doesnt' exist or auction is over
-        return 0
-    return 1 == auctions.update_one({"id": auction, "highest_bid": {"$lt": bid}},
+    return 1 == auctions.update_one({"id": auction, "timeout": False, "highest_bid": {"$lt": bid}},
                                     {"$set": {"highest_bidder": username, "highest_bid": bid}}).modified_count
 
 
@@ -66,15 +63,10 @@ def find_won_auctions_by_username(username: str):
 def find_posted_auctions_by_username(username):
     return list(auctions.find({"username": username}, {"_id": 0}))
 
+# Return all active auctions
 def all_auctions():
     """Only returns all the active auctions now"""
-    all = auctions.find({}, {"_id": 0})
-    active_auctions = []#willl contain all the active auctions
-    #only return the ones who's time isn't over
-    for a in all:
-        if a.get('time', -1) > time():
-            active_auctions.append(a)
-    return active_auctions
+    return list(auctions.find({"timeout": False}, {"_id": 0}))
 
 
 # takes in a new user (callable the same way as a python dict)
@@ -108,6 +100,7 @@ def end_auction(auction_id:int):
     if auction is None: # Invalid auction_id
         return -1
     
+    # Insert won auction into user's list of won auctions
     users.update_one({"id": auction["highest_bidder"]}, {"$push": {"won_auctions": auction_id}})
 
     return auction["highest_bidder"]
