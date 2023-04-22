@@ -64,7 +64,6 @@ def returning_user():
 def login_response(user):
     response = redirect('/home')
     new_token = sessions.generate_user_token(str(user["id"]))
-    user = data.find_user_by_id(user["id"])
     response.set_cookie('token', new_token)
     return response
 

@@ -1,6 +1,7 @@
 from flask_bcrypt import Bcrypt
 from secrets import token_urlsafe
 from data import tokens
+from hashlib import sha256
 
 """
 The Sessions class is used for managing bcrypt(used for encrypting passwords for mongodb) and 
@@ -11,11 +12,14 @@ The __user_tokens dict can(and most likely will) be modified to include function
 
 
 def token_exists(user_token):
-    return tokens.find_one({"token": user_token})
+    user = tokens.find_one({"token": sha256(user_token.encode()).hexdigest()})
+    if user_token != "":
+        return user
+    return None
 
 
 def remove_token(user_token):
-    tokens.update_one({"token": user_token}, {"$set": {"token": ""}})
+    tokens.update_one({"token": sha256(user_token.encode()).hexdigest()}, {"$set": {"token": ""}})
 
 
 def id_from_token(user_token):
@@ -29,7 +33,7 @@ def generate_user_token(user_id):
     user_token = token_urlsafe(20)
     while token_exists(user_token):
         user_token = token_urlsafe(20)
-    tokens.insert_one({"token": user_token, "id": int(user_id)})
+    tokens.insert_one({"token": sha256(user_token.encode()).hexdigest(), "id": str(user_id)})
     return user_token
 
 
