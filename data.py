@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from helper import escape_html
 from time import time
+from sessions import Sessions
 
 mongo_client = MongoClient('localhost')
 # mongo_client = MongoClient('mongo')
@@ -92,15 +93,23 @@ def update_auction_by_id(auction_id, auction):
 
 
 # To be called by the timer that controls ending auctions
-# Returns user_id of whoever won or -1 if something went wrong
+# Returns True if successful and False if not
 def end_auction(auction_id:int):
     # Add timeout flag
     auction = auctions.find_one_and_update({"id": auction_id}, {"$set": {"timeout": True}})
 
     if auction is None: # Invalid auction_id
-        return -1
+        return False
     
     # Insert won auction into user's list of won auctions
     users.update_one({"id": auction["highest_bidder"]}, {"$push": {"won_auctions": auction_id}})
 
-    return auction["highest_bidder"]
+    # Send messages
+    for connection in Sessions.web_sockets.values():
+        pass
+        # if this connection is auction["highest_bidder]
+        # connection.send("WINNER")
+        # else
+        # connection.send("LOSER")
+
+    return True
