@@ -100,6 +100,12 @@ def update_auction_by_id(auction_id, auction):
 
 
 # To be called by the timer that controls ending auctions
-# Returns user_id of whoever won
+# Returns user_id of whoever won or -1 if something went wrong
 def end_auction(auction_id):
-    pass
+    # Add timeout flag
+    auction = auctions.find_one_and_update({"id": auction_id}, {"$set": {"timeout": True}})
+
+    if auction is None: # Invalid auction_id
+        return -1
+
+    return auction["highest_bidder"]

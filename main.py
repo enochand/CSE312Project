@@ -125,6 +125,7 @@ def create_auction_page():
 # "time" = end date timestamp
 # "highest_bidder" = user id of highest bidder, will be creator if no one bids
 # "highest_bid" = highest bid (starts at starting price)
+# "timeout" = false by default, true if auction is ended
 @app.post('/create')
 def create_auction():
     # Redirect to login page if not logged in
@@ -194,7 +195,8 @@ def create_auction():
         "description": escape(description),     # description: The description of the item up for auction
         "time": int(time()) + duration,  # time: The time the auction is set to end
         "highest_bidder": username, 
-        "highest_bid": price}
+        "highest_bid": price,
+        "timeout": False}               # timeout: True/False if auction is ended
     #removing keeping track of all all bids for now
     # bid = {"user": user["id"], "bid": price}
     # auction["bids"] = [bid]
