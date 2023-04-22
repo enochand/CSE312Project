@@ -166,12 +166,12 @@ def create_auction():
     except ValueError:
         return "Price is not an integer"
 
-    # Verify numeric elements are not negative
-    if duration < 0:
-        return "Duration must not be negative"
+    # Verify numeric elements are within range
+    if duration < 10 or duration > 3600:
+        return "Duration must be between 10 and 3600 seconds"
 
-    if price < 0:
-        return "Price must not be negative"
+    if price < 0 or price > 999999: 
+        return "Price must be between 0 and 999999"
 
     # Verify file is of an allowed file extension
     helper.allowed_auction_image(file.filename)
