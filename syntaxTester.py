@@ -1,4 +1,2 @@
-x = 1
-
-print(vars(x))
-print(dir(x))
+test = ''
+print(int(test))

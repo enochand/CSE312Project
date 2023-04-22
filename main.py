@@ -191,14 +191,24 @@ def create_auction():
         "user": user["id"],             # user: The id for the user who made the auction 
         "username": username,           # username of person who made the auction
         "image": filename,              # image: The image for the item up for auction
-        "description": description,     # description: The description of the item up for auction
-        "time": int(time()) + duration} # time: The time the auction is set to end
-    bid = {"user": user["id"], "bid": price}
-    auction["bids"] = [bid]
+        "description": escape(description),     # description: The description of the item up for auction
+        "time": int(time()) + duration,  # time: The time the auction is set to end
+        "highest_bidder": username, 
+        "highest_bid": price}
+    #removing keeping track of all all bids for now
+    # bid = {"user": user["id"], "bid": price}
+    # auction["bids"] = [bid]
+
+    #send auction to everyone with a WS connection
+    message = {'messageType': 'newAuction', 'auction': auction}
+    for connection in ss.web_sockets.values():
+        connection.send(json.dumps(message))
+
     # Insert auction into database
     data.new_auction(auction, user['id'], auction_id)
+
     # Redirect to auction display page
-    return redirect("/auctions")
+    return redirect("/auctions_page")
 
 
 # Get auction JSON by id
@@ -235,11 +245,10 @@ def item_image(filename):
 #This is the auctions page that will have a WS connection
 @app.get('/auctions_page')
 def returnAuctionsPage():
-    # check cookies; if logged in take to home page
-    # user_token = request.cookies.get("token")
-    # user = is_logged_in(user_token)
-    # if not user:
-    #     return render_template("index.html")
+    user_token = request.cookies.get("token")
+    user = is_logged_in(user_token)
+    if not user:
+        return redirect('/')
     return render_template("auctions_page.html")
 
 #send js for auctions_page
@@ -250,7 +259,31 @@ def returnJSFiles(filename):
     response.headers["X-Content-Type-Options"] = "nosniff"
     return response
 
+@app.get("/find_won_auctions")
+def findWonAuctions():
+    user_token = request.cookies.get("token")
+    if not is_logged_in(user_token):
+        return redirect('/')
+    #find all the auctions this user has won
+    user_id = ss.id_from_token(user_token) # We use this to verify the user over websockets
+    user = data.find_user_by_id(user_id)
+    username = user.get('username', None)
+    won = data.find_won_auctions_by_username(username)
+    won = json.dumps(won)
+    return won#returns a list of all won auctions
 
+@app.get("/find_posted_auctions")
+def findPostedAuctions():
+    user_token = request.cookies.get("token")
+    if not is_logged_in(user_token):
+        return redirect('/')
+    #find all the auctions this user has won
+    user_id = ss.id_from_token(user_token) # We use this to verify the user over websockets
+    user = data.find_user_by_id(user_id)
+    username = user.get('username', None)
+    postedAuctions = data.find_posted_auctions_by_username(username)
+    postedAuctions = json.dumps(postedAuctions)
+    return postedAuctions#returns a list of all won auctions
 
 @sock.route('/websockets')
 def websockets(sock):
@@ -258,12 +291,12 @@ def websockets(sock):
        until the client closes the connection.  If multiple clients with the same user_token attempt to connect
        this function trows and Exception."""
     user_token = request.cookies.get("token")
+    user_id = ss.id_from_token(user_token) # We use this to verify the user over websockets
+    user = data.find_user_by_id(user_id)
+    username = user.get('username', None)
     
-    # if Sessions.web_sockets.get(user_token, None) != None:
-    #     print('Token alredy in dictionary')
-    #     #TODO SEND A MESSAGE BACK SAYING WS SOCKET CONNECTION ISN'T GOOD, THEN RETURN
-    #     raise Exception('Multiple people with the same token tried to join websockets')
-    Sessions.web_sockets[user_token] = sock
+    #adding socket connection to web_sockets
+    Sessions.web_sockets[user_id] = sock
     
     #sending all the current auctions
     auctions = list(data.all_auctions())
@@ -277,13 +310,47 @@ def websockets(sock):
             WSmessage = sock.receive()
             WSmessage = json.loads(WSmessage)
         except:
-            Sessions.web_sockets.pop(user_token, None)
-            print(f'{user_token} left websockets!')
+            Sessions.web_sockets.pop(user_id, None)
+            print(f'{username} id: {user_id} left websockets!')
             break  # break out of infinite while loop
         messageType = WSmessage.get('messageType', None)
+        
         if messageType == 'identifyMe':
-            message = {'messageType': 'identity', 'token': user_token}
+            message = {'messageType': 'identity', 'id': user_id, 'username': username}
+            sock.send(json.dumps(message))
+        
+        elif messageType == 'bid':
+            incoming_id = WSmessage.get('user_id', None)
+            if not incoming_id == user_id:# handle someone sends bids with another person's username
+                print('someone tried to bid as someone else')
+                message = {'messageType': 'illegalAction'}
+                sock.send(json.dumps(message))
+            else:
+                from_username = WSmessage.get('username', None)
+                auctionID = int(WSmessage.get('auctionID', None))#make in int
+                bidPrice = verifyNumber(WSmessage.get('bid', float('-inf')))
+                if bidPrice == -1:#invalid input, ignore
+                    continue
 
+                pushed = data.push_bid(auctionID, from_username, bidPrice)#pushed == true if updates winning bid
+                if pushed:
+                    #if this runs, the client is the current highest bidder
+                    WSmessage['messageType'] = 'updateBid'#change message type
+                    message = json.dumps(WSmessage)#will just foreward this message to everyone
+                    #send this update to everyone
+                    for connection in ss.web_sockets.values():
+                        connection.send(message)
+
+
+def verifyNumber(num):
+    """This function is used to verify that the number sent in a bid is a number"""
+    if num == float('-inf'):
+        return -1
+    try:
+        num = float(num)
+    except:
+        return -1
+    return num
 
 
 
@@ -295,7 +362,7 @@ def change_username():
     user = is_logged_in(token)
     if not user:
         return redirect("/")
-    user["username"] = request.form["new_username"]
+    user["username"] = escape(request.form["new_username"])
     if data.find_user_by_username(user["username"]):
         return "Username Taken"
     elif not helper.valid_username(user["username"]):
@@ -318,7 +385,7 @@ def update_auction():
     description = request.form.get("description")
     highest_bidder = request.form.get("highest_bidder")
     highest_bid = request.form.get("highest_bid")
-    auction = {"image": image, "description": description, "highest_bidder": highest_bidder, "highest_bid": highest_bid}
+    auction = {"image": image, "description": escape(description), "highest_bidder": highest_bidder, "highest_bid": highest_bid}
     data.update_auction_by_id(auction_id, auction)
 
 
@@ -331,7 +398,6 @@ def is_logged_in(user_token):
 # returns true if the token of the user matches the token of the visited user page
 def is_visited_user(user_token, visited_user):
     return is_logged_in(user_token)["id"] == visited_user  # true if the token matches
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)

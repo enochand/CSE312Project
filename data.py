@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from helper import escape_html
+from time import time
 
 mongo_client = MongoClient('localhost')
 # mongo_client = MongoClient('mongo')
@@ -42,17 +43,38 @@ def new_auction(auction, user_id, auction_id):
 
 
 # Returns True if bid was pushed, False otherwise
-def push_bid(auction, user, bid):
+def push_bid(auction:int, username:str, bid:int):
+    auction = find_auction_by_id(auction)
+    if not auction or auction.get('time', -1) < time():#if id doesnt' exist or auction is over
+        return 0
     return 1 == auctions.update_one({"id": auction, "highest_bid": {"$lt": bid}},
-                                    {"$set": {"highest_bidder": user, "highest_bid": bid}}).modified_count
+                                    {"$set": {"highest_bidder": username, "highest_bid": bid}}).modified_count
 
 
 def find_auction_by_id(auction_id):
     return auctions.find_one({"id": int(auction_id)}, {"_id": 0})
 
+def find_won_auctions_by_username(username: str):
+    allWinning = auctions.find({"highest_bidder": username}, {"_id": 0})
+    #return all auctions that are over where this person was highest bidder
+    output = []
+    for a in allWinning:
+        if a.get('time', float('inf')) < time():
+            output.append(a)
+    return output
+
+def find_posted_auctions_by_username(username):
+    return list(auctions.find({"username": username}, {"_id": 0}))
 
 def all_auctions():
-    return auctions.find({}, {"_id": 0})
+    """Only returns all the active auctions now"""
+    all = auctions.find({}, {"_id": 0})
+    active_auctions = []#willl contain all the active auctions
+    #only return the ones who's time isn't over
+    for a in all:
+        if a.get('time', -1) > time():
+            active_auctions.append(a)
+    return active_auctions
 
 
 # takes in a new user (callable the same way as a python dict)

@@ -19,7 +19,7 @@
     width: 100%;
     position: relative;
     float: left;
-    z-index: -1;
+    /* z-index: -1; */
   }
   
   .header img {
@@ -103,3 +103,18 @@
     color: #F1D58B;
     overflow: hidden;
   }
+
+
+  /* ADDED BY ENOCH */
+.auction_image {
+    width: 200px;
+}
+.won_auction {
+  background-color: green;
+  width: fit-content;
+}
+
+.posted_auction {
+  background-color: aqua;
+  width: fit-content;
+}
