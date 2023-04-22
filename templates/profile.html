@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif&family=Oranienbaum&display=swap" rel="stylesheet">
+    <link href="static/profile.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+
+  <div class="line-break">
+      <h1>EXCALIBUR  AUCTION  HOUSE</h1>
+    </div>
+    
+  <div class="header">
+      <img src="static/images/auction.jpg" alt="auction-hammer">
+      <div class="container">
+        <h1>{{ username }}'s Profile</h1>
+  
+      <!--
+          Change password
+          Change username
+          Auctions the user posted
+          Auctions the user has won/purchased
+      -->
+      
+      {% if is_user %}
+      <h1>Change Password</h1>
+          <form action="/change_password" id="change_password" method="post">
+              <label for="new_password">Username: </label>
+              <input id="new_password" type="text" name="new_password">
+              <input type="submit" value="Change Password">
+          </form>
+      
+      <h1>Change Username</h1>
+          <form action="/change_username" id="change_username" method="post">
+              <label for="new_username">Username: </label>
+              <input id="new_username" type="text" name="new_username">
+              <input type="submit" value="Change Username">
+          </form>
+      
+      <h1>Auctions Posted</h1>
+      
+          <ul>
+          {% for auction in posted_auctions %}
+              <li>{{ auction }}</li>
+          {% else %}
+              <li>No auctions found</li>
+          {% endfor %}
+          </ul>
+      
+      <h1>Auctions Won</h1>
+      
+          <ul>
+          {% for auction in won_auctions %}
+              <li>{{ auction }}</li>
+          {% else %}
+              <li>No auctions found</li>
+          {% endfor %}
+          </ul>
+      
+      <h1>Auctions Purchased</h1>
+      
+          <ul>
+          {% for auction in purchased_auctions %}
+              <li>{{ auction }}</li>
+          {% else %}
+              <li>No auctions found</li>
+          {% endfor %}
+          </ul>
+      
+      {% else %}
+      
+      <h1>Auctions Posted</h1>
+      
+          <ul>
+          {% for auction in posted_auctions %}
+              <li>{{ auction }}</li>
+          {% else %}
+              <li>No auctions found</li>
+          {% endfor %}
+          </ul>
+      
+      <h1>Auctions Won</h1>
+      
+          <ul>
+          {% for auction in won_auctions %}
+              <li>{{ auction }}</li>
+          {% else %}
+              <li>No auctions found</li>
+          {% endfor %}
+          </ul>
+      
+      <h1>Auctions Purchased</h1>
+      
+          <ul>
+          {% for auction in purchased_auctions %}
+              <li>{{ auction }}</li>
+          {% else %}
+              <li>No auctions found</li>
+          {% endfor %}
+          </ul>
+      
+      {% endif %}
+    </div>
+  </div>
+  <div class="line-break"></div>
+</body>
+</html>
