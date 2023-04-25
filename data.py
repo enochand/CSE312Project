@@ -104,12 +104,9 @@ def end_auction(auction_id:int):
     # Insert won auction into user's list of won auctions
     users.update_one({"id": auction["highest_bidder"]}, {"$push": {"won_auctions": auction_id}})
 
-    # Send messages
+    # Send auction end message
+    message = {'messageType': 'auctionEnd', 'auction': auction_id} # I'm not sure what is expected to be sent on auction end, so change this if necessary
     for connection in Sessions.web_sockets.values():
-        pass
-        # if this connection is auction["highest_bidder]
-        # connection.send("WINNER")
-        # else
-        # connection.send("LOSER")
+        connection.send(message)
 
     return True
