@@ -2,6 +2,8 @@ from pymongo import MongoClient
 from helper import escape_html
 from time import time
 from sessions import Sessions
+import json
+import threading
 
 mongo_client = MongoClient('localhost')
 # mongo_client = MongoClient('mongo')
@@ -48,7 +50,6 @@ def push_bid(auction:int, username:str, bid:int):
     return 1 == auctions.update_one({"id": auction, "timeout": False, "highest_bid": {"$lt": bid}},
                                     {"$set": {"highest_bidder": username, "highest_bid": bid}}).modified_count
 
-
 def find_auction_by_id(auction_id):
     return auctions.find_one({"id": int(auction_id)}, {"_id": 0})
 
@@ -65,8 +66,10 @@ def find_posted_auctions_by_username(username):
     return list(auctions.find({"username": username}, {"_id": 0}))
 
 # Return all active auctions
+# Return all active auctions
 def all_auctions():
     """Only returns all the active auctions now"""
+    return list(auctions.find({"timeout": False}, {"_id": 0}))
     return list(auctions.find({"timeout": False}, {"_id": 0}))
 
 
@@ -92,9 +95,20 @@ def update_auction_by_id(auction_id, auction):
         auctions.find_one_and_update({"id": auction_id}, {"$set": {"highest_bid": auction["highest_bid"]}})
 
 
+def create_auction_ending_thread(auction_id:int, duration:float):
+    
+    # since we can't pass function arguments into a function pointer, then we need a lambda
+    end_auction_function =  lambda: end_auction(auction_id)
+    auction_end_timer = threading.Timer(duration, end_auction_function)
+    auction_end_timer.start()
+    return
+
+
 # To be called by the timer that controls ending auctions
 # Returns True if successful and False if not
 def end_auction(auction_id:int):
+    print("entered into the end auction function", flush=True) #Debug
+
     # Add timeout flag
     auction = auctions.find_one_and_update({"id": auction_id}, {"$set": {"timeout": True}})
 
@@ -104,9 +118,22 @@ def end_auction(auction_id:int):
     # Insert won auction into user's list of won auctions
     users.update_one({"id": auction["highest_bidder"]}, {"$push": {"won_auctions": auction_id}})
 
-    # Send auction end message
-    message = {'messageType': 'auctionEnd', 'auction': auction_id} # I'm not sure what is expected to be sent on auction end, so change this if necessary
+    a = auctions.find_one({'id': auction_id})
+    winningUsername = a.get('highest_bidder', '')
+    message = {'messageType': 'endAuction', 'auction': auction_id, 'winner': winningUsername}
+    # Send messages
     for connection in Sessions.web_sockets.values():
-        connection.send(message)
-
+        connection.send(json.dumps(message))
+    print("should have send a message to all people", flush=True) #Debug
     return True
+
+def give_me_all_living_auctions_ids()->tuple[list]:
+    all_auctions = auctions.find({})
+    ids = []
+    durations = []
+    for a in all_auctions:
+        t = a.get('time', -1)
+        if t < time(): continue #skip over auctions that ended
+        ids.append(a['id'])
+        durations.append(t - time())
+    return ids, durations
