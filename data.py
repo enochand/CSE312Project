@@ -13,6 +13,7 @@ auction_counter = db["auction_counter"]
 if "auction_counter" not in db.list_collection_names():
     auction_counter.insert_one({"count": 0})
 auctions = db["auctions"]
+tokens = db["tokens"]
 
 
 def find_user_by_username(username):
@@ -91,6 +92,14 @@ def update_auction_by_id(auction_id, auction):
     if auction["highest_bid"] and auction["highest_bid"] != "":
         auctions.find_one_and_update({"id": auction_id}, {"$set": {"highest_bid": auction["highest_bid"]}})
 
+
+def auctions_won(userid):
+    won = []
+    user_auctions = auctions.find({"highest_bidder":userid})
+    for auction in user_auctions:
+        if auction["duration"] < int(time()):
+            won = won.append(auction["id"])
+    return won
 
 # To be called by the timer that controls ending auctions
 # Returns True if successful and False if not

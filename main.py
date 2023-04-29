@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, send_from_directory, jsonify, escape
 from time import time, sleep
 from sessions import Sessions
+import sessions
 import data
 from flask_sock import Sock, ConnectionClosed
 import json
@@ -59,14 +60,14 @@ def returning_user():
     # log out of current account
     user_token = request.cookies.get("token")
     if is_logged_in(user_token):
-        ss.remove_token(user_token)
+        sessions.remove_token(user_token)
 
     return login_response(user)
 
 
 def login_response(user):
     response = redirect('/home')
-    new_token = ss.generate_user_token(str(user["id"]))
+    new_token = sessions.generate_user_token(str(user["id"]))
     response.set_cookie('token', new_token)
     return response
 
@@ -79,10 +80,12 @@ def user_info(user_id):
         return redirect('/')
     is_user = is_visited_user(token, user_id)  # returns false if no user found
     user = data.find_user_by_id(user_id)
+    user_auctions_won = data.auctions_won(user_id)
     if user:
         user_template = render_template('profile.html', is_user=is_user,
                                         username=user["username"],
-                                        posted_auctions=user["auctions"])
+                                        posted_auctions=user["auctions"],
+                                        won_auctions=user_auctions_won)
         return user_template
     return "User not found"
 
@@ -93,7 +96,7 @@ def log_out():
     response = redirect("/")
     user_token = request.cookies.get("token")
     response.set_cookie("token", "", expires=0)
-    ss.remove_token(user_token)
+    sessions.remove_token(user_token)
     return response
 
 
@@ -393,7 +396,7 @@ def update_auction():
 
 # returns user if the user is logged in
 def is_logged_in(user_token):
-    user_id = ss.id_from_token(user_token)  # -1 if user_token does not exist
+    user_id = sessions.id_from_token(user_token)  # -1 if user_token does not exist
     return data.find_user_by_id(user_id)  # none if user user_id does not exist
 
 
