@@ -5,8 +5,8 @@ from sessions import Sessions
 import json
 import threading
 
-mongo_client = MongoClient('localhost')
-# mongo_client = MongoClient('mongo')
+# mongo_client = MongoClient('localhost')
+mongo_client = MongoClient('mongo')
 db = mongo_client['excaliber']
 users = db['users']
 counter = db["counter"]
@@ -107,7 +107,7 @@ def create_auction_ending_thread(auction_id:int, duration:float):
 # To be called by the timer that controls ending auctions
 # Returns True if successful and False if not
 def end_auction(auction_id:int):
-    print("entered into the end auction function", flush=True) #Debug
+    # print("entered into the end auction function", flush=True) #Debug
 
     # Add timeout flag
     auction = auctions.find_one_and_update({"id": auction_id}, {"$set": {"timeout": True}})
@@ -124,10 +124,10 @@ def end_auction(auction_id:int):
     # Send messages
     for connection in Sessions.web_sockets.values():
         connection.send(json.dumps(message))
-    print("should have send a message to all people", flush=True) #Debug
+    # print("should have send a message to all people", flush=True) #Debug
     return True
 
-def give_me_all_living_auctions_ids()->tuple[list]:
+def give_me_all_living_auctions_ids():
     all_auctions = auctions.find({})
     ids = []
     durations = []
