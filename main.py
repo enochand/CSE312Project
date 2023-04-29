@@ -1,11 +1,11 @@
 from flask import Flask, render_template, request, redirect, send_from_directory, jsonify, escape
 from time import time, sleep
 from sessions import Sessions
-import sessions
 import data
 from flask_sock import Sock, ConnectionClosed
 import json
 import helper
+import threading
 
 
 app = Flask(__name__)
@@ -197,12 +197,16 @@ def create_auction():
         "image": filename,              # image: The image for the item up for auction
         "description": escape(description),     # description: The description of the item up for auction
         "time": int(time()) + duration,  # time: The time the auction is set to end
-        "highest_bidder": username, 
+        "highest_bidder": 'Nobody has bid yet!', 
         "highest_bid": price,
         "timeout": False}               # timeout: True/False if auction is ended
     #removing keeping track of all all bids for now
     # bid = {"user": user["id"], "bid": price}
     # auction["bids"] = [bid]
+
+    #Start a timer to end auction
+    data.create_auction_ending_thread(auction_id, duration)
+
 
     #send auction to everyone with a WS connection
     message = {'messageType': 'newAuction', 'auction': auction}
@@ -212,8 +216,11 @@ def create_auction():
     # Insert auction into database
     data.new_auction(auction, user['id'], auction_id)
 
+
+
     # Redirect to auction display page
     return redirect("/auctions_page")
+
 
 
 # Get auction JSON by id
@@ -346,13 +353,17 @@ def websockets(sock):
                     for connection in ss.web_sockets.values():
                         connection.send(message)
 
+def sendMessageToAll(message: str):
+    """This sends a message to everyone with a websocket connection"""
+    for connection in ss.web_sockets.values():
+        connection.send(message)
 
 def verifyNumber(num):
     """This function is used to verify that the number sent in a bid is a number"""
     if num == float('-inf'):
         return -1
     try:
-        num = float(num)
+        num = int(num)
     except:
         return -1
     return num
@@ -405,4 +416,7 @@ def is_visited_user(user_token, visited_user):
     return is_logged_in(user_token)["id"] == visited_user  # true if the token matches
 
 if __name__ == "__main__":
+    ids, durations = data.give_me_all_living_auctions_ids()
+    for i in range(len(ids)):
+        data.create_auction_ending_thread(ids[i], durations[i])
     app.run(host="0.0.0.0", port=8080)
