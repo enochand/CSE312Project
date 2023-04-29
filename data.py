@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from helper import escape_html
 from time import time
+from sessions import Sessions
 import json
 import threading
 
@@ -106,8 +107,6 @@ def create_auction_ending_thread(auction_id:int, duration:float):
 # To be called by the timer that controls ending auctions
 # Returns True if successful and False if not
 def end_auction(auction_id:int):
-    # Import the sessions without having a circular import
-    from sessions import Sessions
     # print("entered into the end auction function", flush=True) #Debug
 
     # Add timeout flag
