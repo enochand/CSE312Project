@@ -8,8 +8,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif&family=Oranienbaum&display=swap" rel="stylesheet">
     <link href="static/home.css" rel="stylesheet" type="text/css" />
+    <script src="/js/home.js"></script>
 </head>
-<body>
+<body onload="welcome();">
   <div class="line-break">
     <h1>EXCALIBUR  AUCTION  HOUSE</h1>
   </div>
@@ -34,6 +35,22 @@
       </div>
     </div>
   </div>
+  <a href="/auctions_page" id="goToAuctionsPage">
+    Go To Auctions Page
+  </a>
+  <a href="/create" id="goToCreate">
+    Crete Auction
+  </a>
+  
+  <dif id="postedAuctions">
+    All auctions posted by you are below
+  </dif>
+ 
+  <div id="wonAuctions">
+    All won auctions are below
+  </div>
+  
+  
   <div class="line-break"></div>
 </body>
 </html>

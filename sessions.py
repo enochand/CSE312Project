@@ -38,8 +38,11 @@ def generate_user_token(user_id):
 
 
 class Sessions:
+    #key = token, value = socket connection
+    web_sockets = {} #this will hold all the web sockets that are connected, for brodcast operation
     def __init__(self, app):
         self.__bcrypt = Bcrypt(app)
+
 
     # returns a hashed version of the password(raw string)
     def pw_hash(self, password):
