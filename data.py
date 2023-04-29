@@ -5,8 +5,8 @@ from sessions import Sessions
 import json
 import threading
 
-mongo_client = MongoClient('localhost')
-# mongo_client = MongoClient('mongo')
+# mongo_client = MongoClient('localhost')
+mongo_client = MongoClient('mongo')
 db = mongo_client['excaliber']
 users = db['users']
 counter = db["counter"]
@@ -67,10 +67,8 @@ def find_posted_auctions_by_username(username):
     return list(auctions.find({"username": username}, {"_id": 0}))
 
 # Return all active auctions
-# Return all active auctions
 def all_auctions():
     """Only returns all the active auctions now"""
-    return list(auctions.find({"timeout": False}, {"_id": 0}))
     return list(auctions.find({"timeout": False}, {"_id": 0}))
 
 
@@ -105,15 +103,6 @@ def create_auction_ending_thread(auction_id:int, duration:float):
     return
 
 
-def create_auction_ending_thread(auction_id:int, duration:float):
-    
-    # since we can't pass function arguments into a function pointer, then we need a lambda
-    end_auction_function =  lambda: end_auction(auction_id)
-    auction_end_timer = threading.Timer(duration, end_auction_function)
-    auction_end_timer.start()
-    return
-
-
 def auctions_won(userid):
     won = []
     user_auctions = auctions.find({"highest_bidder":userid})
@@ -122,10 +111,11 @@ def auctions_won(userid):
             won = won.append(auction["id"])
     return won
 
+
 # To be called by the timer that controls ending auctions
 # Returns True if successful and False if not
 def end_auction(auction_id:int):
-    print("entered into the end auction function", flush=True) #Debug
+    # print("entered into the end auction function", flush=True) #Debug
 
     # Add timeout flag
     auction = auctions.find_one_and_update({"id": auction_id}, {"$set": {"timeout": True}})
@@ -142,10 +132,10 @@ def end_auction(auction_id:int):
     # Send messages
     for connection in Sessions.web_sockets.values():
         connection.send(json.dumps(message))
-    print("should have send a message to all people", flush=True) #Debug
+    # print("should have send a message to all people", flush=True) #Debug
     return True
 
-def give_me_all_living_auctions_ids()->tuple[list]:
+def give_me_all_living_auctions_ids():
     all_auctions = auctions.find({})
     ids = []
     durations = []

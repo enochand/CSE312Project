@@ -419,4 +419,4 @@ if __name__ == "__main__":
     ids, durations = data.give_me_all_living_auctions_ids()
     for i in range(len(ids)):
         data.create_auction_ending_thread(ids[i], durations[i])
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8080)#docker-compose up --build --force-recreate
