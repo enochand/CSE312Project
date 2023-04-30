@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Auction</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif&family=Oranienbaum&display=swap" rel="stylesheet">
+    <link href="static/create_auction.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+  <nav>
+    <div class="nav-bar">
+      <a href="/home" id="goHome">Home</a>
+      <a href="/auctions_page" id="goToAuctionsPage">View Auctions</a>
+    </div>
+  </nav>
+  
+  <div class="header">
+    <img src="static/images/auction.jpg" alt="auction-hammer">
+    <div class="container">
+      <form action="/create" method="post" enctype="multipart/form-data">
+          <h1>Create Auction</h1>
+          <label for="price">Starting price:</label><br>
+          <input id="price" type="number" name="price"><br>
+          <br>
+          <label for="duration">Duration (seconds):</label><br>
+          <input id="duration" type="number" name="duration"><br>
+          <br>
+          <label for="description">Description:</label><br>
+          <textarea id="description" name="description" cols="40" rows="6"></textarea><br>
+          <br>
+          <label for="image">Image:</label><br>
+          <input id="image" type="file" name="image"><br>
+          <br>
+          <input type="submit" value="Create">
+      </form>
+    </div>
+  </div>
+
+  <div class="line-break"></div>
+
+
+  
+</body>
+</html>
