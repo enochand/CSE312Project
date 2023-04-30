@@ -277,7 +277,7 @@ def findWonAuctions():
     if not is_logged_in(user_token):
         return redirect('/')
     #find all the auctions this user has won
-    user_id = ss.id_from_token(user_token) # We use this to verify the user over websockets
+    user_id = sessions.id_from_token(user_token) # We use this to verify the user over websockets
     user = data.find_user_by_id(user_id)
     username = user.get('username', None)
     won = data.find_won_auctions_by_username(username)
@@ -290,7 +290,7 @@ def findPostedAuctions():
     if not is_logged_in(user_token):
         return redirect('/')
     #find all the auctions this user has won
-    user_id = ss.id_from_token(user_token) # We use this to verify the user over websockets
+    user_id = sessions.id_from_token(user_token) # We use this to verify the user over websockets
     user = data.find_user_by_id(user_id)
     username = user.get('username', None)
     postedAuctions = data.find_posted_auctions_by_username(username)
@@ -303,7 +303,7 @@ def websockets(sock):
        until the client closes the connection.  If multiple clients with the same user_token attempt to connect
        this function trows and Exception."""
     user_token = request.cookies.get("token")
-    user_id = ss.id_from_token(user_token) # We use this to verify the user over websockets
+    user_id = sessions.id_from_token(user_token) # We use this to verify the user over websockets
     user = data.find_user_by_id(user_id)
     username = user.get('username', None)
     
