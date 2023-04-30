@@ -19,8 +19,6 @@ body {
   width: 100%;
   position: relative;
   float: left;
-  /* Commenting this out because it made the form un-clickable */
-  /* z-index: -1; */
 }
 
 .header img {
@@ -38,21 +36,21 @@ body {
   height: 50%;
   width: 50%;
   padding: 2rem 5rem;
-  flex-wrap: wrap;
 }
 
 .form-card {
   display: inline-block;
-  padding: 2rem 3rem;
-  vertical-align: middle;
+  padding: 2rem 2rem;
   background-color: #FFFAF8;
   text-align: left;
 
   font-family: 'Noto Serif', serif;
   color: #152152;
   border-radius: 30px;
-  overflow: hidden;
+  overflow: scroll;
+  margin-right: 40px;
 }
+
 
 .form-card h1 {
   font-size: 28px;
@@ -93,7 +91,7 @@ form-card a {
   background-color: #152152;
   width: 100%;
   float: left;
-  height: 50px;
+  height: 100px;
 }
 
 .line-break h1 {

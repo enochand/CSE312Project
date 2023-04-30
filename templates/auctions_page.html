@@ -1,17 +1,31 @@
-<!doctype html>
-<html>
-  <head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Auctions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif&family=Oranienbaum&display=swap" rel="stylesheet">
     <link href="static/auctions_page.css" rel="stylesheet" type="text/css" />
-  </head>
+</head>
   
   <body>
-    <a href="/home" id="goHome">
-      Go home
-    </a>
+    
+    <nav>
+      <div class="nav-bar">
+        <a href="/home" id="goHome">Home</a>
+        <a href="/create" id="goToCreate">Create Auction</a>
+      </div>
+    </nav>
 
-    <div id="Auctions" >
-      Auctions below
+    <div class="line-break">
+      <h1>AUCTIONS DISPLAYED BELOW</h1>
     </div>
+
+    <div id="Auctions"></div>
+
+    <div class="line-break"></div>
 
     <script src="/js/auctions_page.js"></script>
   </body>

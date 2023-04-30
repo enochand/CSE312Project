@@ -1,23 +1,129 @@
+* {
+    box-sizing: border-box;
+  }
+  
+body {
+    background-color: #152152;
+    margin: 0;
+    padding: 0;
+}
 
+nav {
+    background: #0c1538;
+    width: 100%;
+    height: 100px;
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+  }
+  
+.nav-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
 
+    width: 65%;
+    height: 50px;
+    border: 1.5px solid #896C21;
+    border-radius: 35px;
+}
+
+.nav-bar a {
+    text-decoration: none;
+    font-size: 19px;
+    font-family: 'Noto Serif', serif;
+    color: #F1D58B;
+    padding: 0% 7.5%
+}
+
+.nav-bar a:hover {
+    background-color: #2b3f89;
+    color: white;
+    border-radius: 35px;
+}
+
+.line-break {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    
+    background-color: #152152;
+    width: 100%;
+    float: left;
+    height: 100px;
+  }
+  
+.line-break h1 {
+    text-align: center;
+    letter-spacing: 1.2px;
+    font-size: 3.25vw;
+    font-family: 'Oranienbaum', serif;
+    color: #F1D58B;
+    overflow: hidden;
+}
+
+#Auctions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  background-color: #feefd7;
+  padding: 20px;
+  min-height: 700px;
+}
 
 .auction_image {
     width: 200px;
 }
 
 .active_auction {
-    color: black;
-    background-color: aquamarine;
+    background-color: #FFFAF8;
     width: fit-content;
+    padding: 20px;
+    border: 1.5px solid #896C21;
+    border-radius: 35px;
+    
+    text-align: left;
+    font-family: 'Noto Serif', serif;
+    color: #152152;
+    
+    float: left;
+    margin-right: 40px;
+    margin-bottom: 40px;
 }
 
 .ending_auction {
     background-color: red;
     width: fit-content;
+    padding: 20px;
+    border: 1.5px solid #8c0000;
+    border-radius: 35px;
+    
+    text-align: left;
+    font-family: 'Noto Serif', serif;
+    color: #000000;
+    
+    float: left;
+    margin-right: 40px;
+    margin-bottom: 40px;
 }
 
 .won_auction {
     background-color: green;
     width: fit-content;
+    padding: 20px;
+    border: 1.5px solid rgb(0, 83, 0);
+    border-radius: 35px;
+    
+    text-align: left;
+    font-family: 'Noto Serif', serif;
+    color: #000000;
+    
+    float: left;
+    margin-right: 40px;
+    margin-bottom: 40px;
 }
 
