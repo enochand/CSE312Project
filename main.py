@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, send_from_directory, jsonify, escape
 from time import time, sleep
-from sessions import Sessions
+import sessions
 import data
 from flask_sock import Sock, ConnectionClosed
 import json
@@ -10,7 +10,7 @@ import threading
 
 app = Flask(__name__)
 sock = Sock(app)
-ss = Sessions(app)  # refer to session.py
+ss = sessions.Sessions(app)  # refer to session.py
 app.config["MAX_CONTENT_PATH"] = 1000000  # 1 MB
 
 
@@ -308,7 +308,7 @@ def websockets(sock):
     username = user.get('username', None)
     
     #adding socket connection to web_sockets
-    Sessions.web_sockets[user_id] = sock
+    sessions.Sessions.web_sockets[user_id] = sock
     
     #sending all the current auctions
     auctions = list(data.all_auctions())
@@ -322,7 +322,7 @@ def websockets(sock):
             WSmessage = sock.receive()
             WSmessage = json.loads(WSmessage)
         except:
-            Sessions.web_sockets.pop(user_id, None)
+            sessions.Sessions.web_sockets.pop(user_id, None)
             print(f'{username} id: {user_id} left websockets!')
             break  # break out of infinite while loop
         messageType = WSmessage.get('messageType', None)
