@@ -5,6 +5,6 @@ services:
   server:
     build: .
     environment:
-      WAIT-HOSTS: mongo:27017
+      WAIT_HOSTS: mongo:27017
     ports:
       - '8080:8080'
