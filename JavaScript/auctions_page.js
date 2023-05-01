@@ -54,6 +54,19 @@ socket.onmessage = function (ws_message)
             appendAuction(a);//append it to the html
             break;
         
+        case 'endAuction':
+          let auctionID = message.auction;
+          let winner = message.winner;
+          if (winner == myUsername) 
+            {
+              setWinner(auctionID);
+            }
+          else
+            {
+              setLost(auctionID);
+            }
+          break;
+        
       
         default:
             console.log("received an invalid WS messageType");
@@ -102,9 +115,9 @@ function appendAuction(auctionDictionary)
       <p id="${auctionNumber}Time">Time Remaining: ${timeRemaining}</p>\
       <label>Current Highest Bid: </label > <label id="${auctionNumber}HighestBid">${highestBid}</label> </br>
       <label>Current Winner: </label > <label id="${auctionNumber}Winner">${winningUsername}</label> </br>
-      <button value="${auctionNumber}" onclick="sendBid(this.value);">Send bid!!</button>\
+      <button id="${auctionNumber}Button" value="${auctionNumber}" onclick="sendBid(this.value);">Send bid!!</button>\
       <label>Bid</label>\
-      <input id="${auctionNumber}NewBid" type="number" />\
+      <input id="${auctionNumber}NewBid" type="number"  min="0" step="1" oninput="validity.valid||(value='')" />\
 </div>\
   `;
   const acutionsDiv = document.getElementById('Auctions');
@@ -135,23 +148,69 @@ function decreaseTimeRemaining()
 {
   for (let auctionID in activeAuctions) 
   {
-    timeRemaining = activeAuctions[auctionID]-1;
+    let timeRemaining = activeAuctions[auctionID]-1;
     activeAuctions[auctionID] = timeRemaining;//update time left in activeAuctions
     //decrase time showed by 1
-    timeP = document.getElementById(auctionID+"Time");
+    let timeP = document.getElementById(auctionID+"Time");
     timeP.innerHTML = `Time Remaining: ${timeRemaining}`;
     if (timeRemaining <= 0) //no time left
     {
       delete activeAuctions[auctionID]; //delete from active auctions
-      inactiveAuctions[auctionID] = 5;//add to inactive auctions, and set it to still show up for 5 seconds
-      //Get element and change it's class
-      let auctionDiv = document.getElementById(auctionID);
-      //if they are the ones with highest bid, change class to won_auction
+    }
+  }
+}
 
-      //else, change class to ending_auction
-      auctionDiv.className = "ending_auction";//change class to ending_auction
+function auctionOverHelper(auctionID)
+{
+  inactiveAuctions[auctionID] = 10;//add to inactive auctions, and set it to still show up for 5 seconds
+  //take away bid button and input field
+  let elem = document.getElementById(auctionID+"Button");
+  elem.remove();
+  elem = document.getElementById(auctionID+"NewBid");
+  elem.remove();
+  //set time remaining to 0, to help with sync issues.
+  if (activeAuctions[auctionID] != undefined)
+  {
+    delete activeAuctions[auctionID];//Delete from active auctions dict
+    let timePElem = document.getElementById(auctionID+"Time");
+    timePElem.innerHTML = "Time Remaining: 0";//display time remaining as 0
+  }
+}
+
+function setWinner(auctionID)
+{
+  //remove input buttons
+  auctionOverHelper(auctionID);
+  //change styling
+  let auctionDiv = document.getElementById(auctionID);
+  auctionDiv.className = "won_auction";
+}
+
+function setLost(auctionID)
+{
+  //remove input buttons
+  auctionOverHelper(auctionID);
+  //change styling
+  let auctionDiv = document.getElementById(auctionID);
+  auctionDiv.className = "ending_auction";
+}
+
+function killOldAuctionsAfter10Seconds()
+{
+  for (let auctionID in inactiveAuctions)
+  {
+    let timeRemaining = inactiveAuctions[auctionID];//get how much time left to display
+    timeRemaining -= 1;//decrease by 1
+    inactiveAuctions[auctionID] = timeRemaining;
+    if (timeRemaining <= 0) 
+    {
+      //remove from html page
+      let auctionDiv = document.getElementById(auctionID);
+      auctionDiv.remove()//This is not supported on very old browsers, but modern ones support this
+      delete inactiveAuctions[auctionID]//remove so future loops don't look at this
     }
   }
 }
 
 setInterval(decreaseTimeRemaining, 1000); //call this every second
+setInterval(killOldAuctionsAfter10Seconds, 1000)

@@ -40,7 +40,7 @@
     font-family: 'Noto Serif', serif;
     color: #152152;
     border-radius: 30px;
-    overflow: scroll;
+    overflow: auto;
   }
   
   .container h1 {

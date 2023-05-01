@@ -1,3 +1,6 @@
+//active auctions so time remaining can still real time decrease
+activeAuctions = {}
+
 // Get all auctions user won
 function getWonAuctions() {
     var	request	=	new	XMLHttpRequest();
@@ -48,7 +51,14 @@ function appendAuctionPosted(auctionDictionary, elemID)
       let timeRemaining = auctionDictionary.time - currentTime;
       let highestBid = auctionDictionary.highest_bid;
       let winningUsername = auctionDictionary.highest_bidder;
-      
+
+      if (timeRemaining > 0)
+      {
+        activeAuctions[auctionNumber] = timeRemaining;//add to object so this number can be decremented every second
+      } else 
+      {
+        timeRemaining = 0;//Don't want to show negative time remaining
+      }
       //Create element and add it to the HTML
       let auction = `<br>\
     <div class="posted_auction" id="${auctionNumber}" >\
@@ -59,9 +69,6 @@ function appendAuctionPosted(auctionDictionary, elemID)
           <p id="${auctionNumber}Time">Time Remaining: ${timeRemaining}</p>\
           <label>Current Highest Bid: </label > <label id="${auctionNumber}HighestBid">${highestBid}</label> </br>
           <label>Current Winner: </label > <label id="${auctionNumber}Winner">${winningUsername}</label> </br>
-          <button value="${auctionNumber}" onclick="sendBid(this.value);">Send bid!!</button>\
-          <label>Bid</label>\
-          <input id="${auctionNumber}NewBid" type="number" />\
     </div>\
       `;
       const acutionsDiv = document.getElementById(elemID);
@@ -93,9 +100,27 @@ function appendAuctionWon(auctionDictionary, elemID)
       return;
     }
 
-    function welcome()
+function welcome()
+{
+    getWonAuctions();
+    getAllPostedAuctions();
+    return;
+}
+
+function decreaseTimeRemaining() 
+{
+  for (let auctionID in activeAuctions) 
+  {
+    timeRemaining = activeAuctions[auctionID]-1;
+    activeAuctions[auctionID] = timeRemaining;//update time left in activeAuctions
+    //decrase time showed by 1
+    timeP = document.getElementById(auctionID+"Time");
+    timeP.innerHTML = `Time Remaining: ${timeRemaining}`;
+    if (timeRemaining <= 0) //no time left
     {
-        getWonAuctions();
-        getAllPostedAuctions();
-        return;
+      delete activeAuctions[auctionID]; //delete from active auctions
     }
+  }
+}
+
+setInterval(decreaseTimeRemaining, 1000)//call this every second
