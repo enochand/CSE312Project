@@ -6,6 +6,7 @@ from flask_sock import Sock, ConnectionClosed
 import json
 import helper
 import threading
+from helper import escape_html
 
 
 app = Flask(__name__)
