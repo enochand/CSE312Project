@@ -81,12 +81,16 @@ def user_info(user_id):
         return redirect('/')
     is_user = is_visited_user(token, user_id)  # returns false if no user found
     user = data.find_user_by_id(user_id)
-    user_auctions_won = data.auctions_won(user_id)
+    username = user.get('username', None)
+    user_auctions_posted = data.find_posted_auctions_by_username(username)
+    user_auctions_won = data.find_won_auctions_by_username(username)
+    user_auctions_purchased = [1, 2]
     if user:
         user_template = render_template('profile.html', is_user=is_user,
                                         username=user["username"],
-                                        posted_auctions=user["auctions"],
-                                        won_auctions=user_auctions_won)
+                                        posted_auctions=user_auctions_posted,
+                                        won_auctions=user_auctions_won,
+                                        purchased_auctions=user_auctions_purchased)
         return user_template
     return "User not found"
 

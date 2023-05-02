@@ -102,16 +102,6 @@ def create_auction_ending_thread(auction_id:int, duration:float):
     auction_end_timer.start()
     return
 
-
-def auctions_won(userid):
-    won = []
-    user_auctions = auctions.find({"highest_bidder":userid})
-    for auction in user_auctions:
-        if auction["duration"] < int(time()):
-            won = won.append(auction["id"])
-    return won
-
-
 # To be called by the timer that controls ending auctions
 # Returns True if successful and False if not
 def end_auction(auction_id:int):
