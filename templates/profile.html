@@ -30,7 +30,7 @@
       {% if is_user %}
       <h1>Change Password</h1>
           <form action="/change_password" id="change_password" method="post">
-              <label for="new_password">Username: </label>
+              <label for="new_password">Password: </label>
               <input id="new_password" type="text" name="new_password">
               <input type="submit" value="Change Password">
           </form>
@@ -46,7 +46,7 @@
       
           <ul>
           {% for auction in posted_auctions %}
-              <li>{{ auction }}</li>
+              <li>{{ auction["description"] }}</li>
           {% else %}
               <li>No auctions found</li>
           {% endfor %}
