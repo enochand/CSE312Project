@@ -1,5 +1,5 @@
 //Web socket connection object
-const socket = new WebSocket('ws://' + location.host + '/websockets');
+const socket = new WebSocket('wss://' + location.host + '/websockets');
 
 
 let meID;//This is my ID
