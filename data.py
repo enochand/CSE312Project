@@ -24,7 +24,7 @@ def find_user_by_username(username):
 
 def new_user(username, password):
     users.insert_one({"id": counter.find_one()["num_users"],
-                      "username": username, "password": password, "auctions": []})
+                      "username": username, "password": password, "auctions": [], "purchased_auctions": []})
     counter.update_one({}, {"$inc": {"num_users": 1}})
 
 def get_username_by_id(id: int):
@@ -48,6 +48,7 @@ def new_auction(auction, user_id, auction_id):
 
 # Returns True if bid was pushed, False otherwise
 def push_bid(auction:int, username:str, bid:int):
+    users.find_one_and_update({"username": username}, {"$push": {"purchased_auctions": auction}})
     return 1 == auctions.update_one({"id": auction, "timeout": False, "highest_bid": {"$lt": bid}},
                                     {"$set": {"highest_bidder": username, "highest_bid": bid}}).modified_count
 
@@ -62,6 +63,23 @@ def find_won_auctions_by_username(username: str):
         if a.get('time', float('inf')) < time():
             output.append(a)
     return output
+
+def find_purchased_auctions_by_username(username: str):
+    found = users.find_one({"username": username})
+    if not found:
+        return None
+    
+    purchased = found["purchased_auctions"]
+    
+    purchased_auctions = []
+    for a in purchased:
+        auction = auctions.find_one({"id": a})
+        if not auction:
+            continue
+
+        purchased_auctions.append(auction)
+
+    return purchased_auctions
 
 def find_posted_auctions_by_username(username):
     return list(auctions.find({"username": username}, {"_id": 0}))
@@ -79,7 +97,7 @@ def all_auctions():
 def update_user(user):
     return users.replace_one(
         {"id": user["id"]},
-        {"id": user["id"], "username": user["username"], "password": user["password"], "auctions": user["auctions"]})
+        {"id": user["id"], "username": user["username"], "password": user["password"], "auctions": user["auctions"], "purchased_auctions": user["purchased_auctions"]})
 
 
 def update_auction_by_id(auction_id, auction):

@@ -84,7 +84,7 @@ def user_info(user_id):
     username = user.get('username', None)
     user_auctions_posted = data.find_posted_auctions_by_username(username)
     user_auctions_won = data.find_won_auctions_by_username(username)
-    user_auctions_purchased = [1, 2]
+    user_auctions_purchased = data.find_purchased_auctions_by_username(username)
     if user:
         user_template = render_template('profile.html', is_user=is_user,
                                         username=user["username"],

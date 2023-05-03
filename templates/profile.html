@@ -16,7 +16,7 @@
     </div>
     
   <div class="header">
-      <img src="static/images/auction.jpg" alt="auction-hammer">
+      <img src="../static/images/auction.jpg" alt="auction-hammer">
       <div class="container">
         <h1>{{ username }}'s Profile</h1>
   
@@ -46,9 +46,9 @@
       
           <ul>
           {% for auction in posted_auctions %}
-              <li>{{ auction["description"] }}</li>
+                <li>Item: {{ auction.description }}, Highest Bid: {{ auction.highest_bid }}, Highest Bidder: {{ auction.highest_bidder }}</li>
           {% else %}
-              <li>No auctions found</li>
+                <li>No auctions found</li>
           {% endfor %}
           </ul>
       
@@ -56,9 +56,9 @@
       
           <ul>
           {% for auction in won_auctions %}
-              <li>{{ auction }}</li>
+                <li>Creator: {{ auction.username }}, Item: {{ auction.description }}, Highest Bid: {{ auction.highest_bid }}</li>
           {% else %}
-              <li>No auctions found</li>
+                <li>No auctions found</li>
           {% endfor %}
           </ul>
       
@@ -66,9 +66,9 @@
       
           <ul>
           {% for auction in purchased_auctions %}
-              <li>{{ auction }}</li>
+                <li>Creator: {{ auction.username }}, Item: {{ auction.description }}, Highest Bid: {{ auction.highest_bid }}, Highest Bidder: {{ auction.highest_bidder }}</li>
           {% else %}
-              <li>No auctions found</li>
+                <li>No auctions found</li>
           {% endfor %}
           </ul>
       
@@ -78,9 +78,9 @@
       
           <ul>
           {% for auction in posted_auctions %}
-              <li>{{ auction }}</li>
+                <li>Item: {{ auction.description }}, Highest Bid: {{ auction.highest_bid }}, Highest Bidder: {{ auction.highest_bidder }}</li>
           {% else %}
-              <li>No auctions found</li>
+                <li>No auctions found</li>
           {% endfor %}
           </ul>
       
@@ -88,9 +88,9 @@
       
           <ul>
           {% for auction in won_auctions %}
-              <li>{{ auction }}</li>
+                <li>Creator: {{ auction.username }}, Item: {{ auction.description }}, Highest Bid: {{ auction.highest_bid }}</li>
           {% else %}
-              <li>No auctions found</li>
+                <li>No auctions found</li>
           {% endfor %}
           </ul>
       
@@ -98,9 +98,9 @@
       
           <ul>
           {% for auction in purchased_auctions %}
-              <li>{{ auction }}</li>
+                <li>Creator: {{ auction.username }}, Item: {{ auction.description }}, Highest Bid: {{ auction.highest_bid }}, Highest Bidder: {{ auction.highest_bidder }}</li>
           {% else %}
-              <li>No auctions found</li>
+                <li>No auctions found</li>
           {% endfor %}
           </ul>
       
