@@ -69,7 +69,7 @@ def returning_user():
 def login_response(user):
     response = redirect('/home')
     new_token = sessions.generate_user_token(str(user["id"]))
-    response.set_cookie('token', new_token)
+    response.set_cookie('token', new_token, httponly=True, secure=True, samesite="Strict", max_age=3600)
     return response
 
 
@@ -178,7 +178,7 @@ def create_auction():
     if duration < 10 or duration > 3600:
         return "Duration must be between 10 and 3600 seconds"
 
-    if price < 0 or price > 999999: 
+    if price < 0 or price > 999999:
         return "Price must be between 0 and 999999"
 
     # Verify file is of an allowed file extension
@@ -197,12 +197,12 @@ def create_auction():
 
     # Create auction
     auction = {"id": auction_id,        # id: ID of the auction
-        "user": user["id"],             # user: The id for the user who made the auction 
+        "user": user["id"],             # user: The id for the user who made the auction
         "username": username,           # username of person who made the auction
         "image": filename,              # image: The image for the item up for auction
         "description": escape(description),     # description: The description of the item up for auction
         "time": int(time()) + duration,  # time: The time the auction is set to end
-        "highest_bidder": 'Nobody has bid yet!', 
+        "highest_bidder": 'Nobody has bid yet!',
         "highest_bid": price,
         "timeout": False}               # timeout: True/False if auction is ended
     #removing keeping track of all all bids for now
@@ -311,19 +311,19 @@ def websockets(sock):
     user_id = sessions.id_from_token(user_token) # We use this to verify the user over websockets
     user = data.find_user_by_id(user_id)
     username = user.get('username', None)
-    
+
     #adding socket connection to web_sockets
     sessions.Sessions.web_sockets[user_id] = sock
-    
+
     #sending all the current auctions
     auctions = list(data.all_auctions())
     message = {'messageType': 'auctionsList', 'auctions': auctions}
     message = json.dumps(message)
     sock.send(message)
-    
+
     # enter while true for persistent socket connection
     while True:
-        try: 
+        try:
             WSmessage = sock.receive()
             WSmessage = json.loads(WSmessage)
         except:
@@ -331,11 +331,11 @@ def websockets(sock):
             print(f'{username} id: {user_id} left websockets!')
             break  # break out of infinite while loop
         messageType = WSmessage.get('messageType', None)
-        
+
         if messageType == 'identifyMe':
             message = {'messageType': 'identity', 'id': user_id, 'username': username}
             sock.send(json.dumps(message))
-        
+
         elif messageType == 'bid':
             incoming_id = WSmessage.get('user_id', None)
             if not incoming_id == user_id:# handle someone sends bids with another person's username
