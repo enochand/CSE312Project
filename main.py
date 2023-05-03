@@ -25,6 +25,9 @@ def landing():
         return render_template("index.html")
     return redirect("/home")
 
+@app.get('/favicon.ico')
+def fav():
+    return send_from_directory('static', 'heart.ico', mimetype='image/vnd.microsof.icon')
 
 # route for creating new user, called in index.html
 @app.post('/signup')
@@ -332,7 +335,11 @@ def websockets(sock):
             break  # break out of infinite while loop
         messageType = WSmessage.get('messageType', None)
 
-        if messageType == 'identifyMe':
+        if messageType == 'ping':
+            message = {'messageType': 'pong'}
+            sock.send(json.dumps(message))
+
+        elif messageType == 'identifyMe':
             message = {'messageType': 'identity', 'id': user_id, 'username': username}
             sock.send(json.dumps(message))
 
