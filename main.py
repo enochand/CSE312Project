@@ -75,6 +75,18 @@ def login_response(user):
     response.set_cookie('token', new_token, httponly=True, secure=True, samesite="Strict", max_age=3600)
     return response
 
+# route to view user info by ID - returns plaintext for now
+@app.get('/user/<string:username>')
+def user_info_redirect(username):
+    token = request.cookies.get("token")
+    if not is_logged_in(token):
+        return redirect('/')
+    
+    found = data.find_user_by_username(username)
+    if found:
+        return redirect("/user/{0}".format(found["id"]))
+
+    return redirect('/')
 
 # route to view user info by ID - returns plaintext for now
 @app.get('/user/<int:user_id>')
@@ -82,6 +94,7 @@ def user_info(user_id):
     token = request.cookies.get("token")
     if not is_logged_in(token):
         return redirect('/')
+    
     is_user = is_visited_user(token, user_id)  # returns false if no user found
     user = data.find_user_by_id(user_id)
     username = user.get('username', None)
