@@ -31,6 +31,9 @@ socket.onmessage = function (ws_message)
     const messageType = message.messageType
     switch (messageType) 
     {
+        case 'pong':
+            break;//Don't need to do anything with pong messages
+
         case 'identity':
             meID = message.id;
             myUsername = message.username;
@@ -143,6 +146,15 @@ function sendBid(auctionID)
   socket.send(message);
 }
 
+//This function gets called every 5 seconds just to keep the WS
+//connection active
+function keepWSConnectionActive() 
+{
+  //package into messageType: bid and send
+  let message = {'messageType': 'ping'};
+  message = JSON.stringify(message);
+  socket.send(message);
+}
 
 function decreaseTimeRemaining() 
 {
@@ -214,3 +226,4 @@ function killOldAuctionsAfter10Seconds()
 
 setInterval(decreaseTimeRemaining, 1000); //call this every second
 setInterval(killOldAuctionsAfter10Seconds, 1000)
+setInterval(keepWSConnectionActive, 5000)//send ping pong every 5 seconds
