@@ -31,9 +31,6 @@ socket.onmessage = function (ws_message)
     const messageType = message.messageType
     switch (messageType) 
     {
-        case 'pong':
-          break;//Don't need to do anything with pong messages
-
         case 'identity':
             meID = message.id;
             myUsername = message.username;
@@ -112,7 +109,7 @@ function appendAuction(auctionDictionary)
   let auction = `<br></br><br></br>\
 <div class="active_auction" id="${auctionNumber}" >\
       <p>Auction Number: ${auctionNumber}</p>\
-      <p>Seller: ${createdBy}</p>\
+      <p>Seller: <a href="https://cse312auction.com/user/${createdBy}">${createdBy}</a></p>\
       <img class="auction_image" src="item/${imageName}"/>\
       <p>Description: ${description}</p>\
       <p id="${auctionNumber}Time">Time Remaining: ${timeRemaining}</p>\
@@ -142,16 +139,6 @@ function sendBid(auctionID)
   
   //package into messageType: bid and send
   let message = {'messageType': 'bid', 'user_id': meID,'username': myUsername, 'auctionID': auctionID, 'bid': newBid};
-  message = JSON.stringify(message);
-  socket.send(message);
-}
-
-//This function gets called every 5 seconds just to keep the WS
-//connection active
-function keepWSConnectionActive() 
-{
-  //package into messageType: bid and send
-  let message = {'messageType': 'ping'};
   message = JSON.stringify(message);
   socket.send(message);
 }
@@ -227,4 +214,3 @@ function killOldAuctionsAfter10Seconds()
 
 setInterval(decreaseTimeRemaining, 1000); //call this every second
 setInterval(killOldAuctionsAfter10Seconds, 1000)
-setInterval(keepWSConnectionActive, 5000)//send ping pong every 5 seconds

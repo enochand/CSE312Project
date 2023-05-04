@@ -63,7 +63,7 @@ function appendAuctionPosted(auctionDictionary, elemID)
       let auction = `<br>\
     <div class="posted_auction" id="${auctionNumber}" >\
           <p>Auction Number: ${auctionNumber}</p>\
-          <p>Seller: ${createdBy}</p>\
+          <p>Seller: <a href="https://cse312auction.com/user/${createdBy}">${createdBy}</a></p>\
           <img class="auction_image" src="item/${imageName}"/>\
           <p>Description: ${description}</p>\
           <p id="${auctionNumber}Time">Time Remaining: ${timeRemaining}</p>\
@@ -89,7 +89,7 @@ function appendAuctionWon(auctionDictionary, elemID)
       let auction = `<br>\
     <div class="won_auction" id="${auctionNumber}" >\
           <p>Auction Number: ${auctionNumber}</p>\
-          <p>Seller: ${createdBy}</p>\
+          <p>Seller: <a href="https://cse312auction.com/user/${createdBy}">${createdBy}</a></p>\
           <img class="auction_image" src="item/${imageName}"/>\
           <p>Description: ${description}</p>\
           <label>You Paid: </label > <label id="${auctionNumber}HighestBid">${highestBid}</label> </br>
