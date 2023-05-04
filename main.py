@@ -234,6 +234,8 @@ def create_auction():
     for connection in ss.web_sockets.values():
         connection.send(json.dumps(message))
 
+    # don't need username in auction anymore
+    auction.pop('username', None)
     # Insert auction into database
     data.new_auction(auction, user['id'], auction_id)
 
