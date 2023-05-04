@@ -10,7 +10,6 @@ nav {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1;
 }
 
 .nav-bar {
@@ -70,10 +69,10 @@ body {
   align-items: center;
   
   background: #FFFAF8;
-  width:25%;
+  width: fit-content;
   text-align: left;
   position: absolute;
-  padding: 2.5% 5% 2.5% 5%;
+  padding: 3%;
 
   font-family: 'Noto Serif', serif;
   color: #152152;

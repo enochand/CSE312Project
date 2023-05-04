@@ -93,12 +93,13 @@ form-card a {
   width: 100%;
   float: left;
   height: 100px;
+  overflow: hidden;
 }
 
 .line-break h1 {
   text-align: center;
   letter-spacing: 1.2px;
-  font-size: 3.25vw;
+  font-size: max(3.25vw, 42px);
   font-family: 'Oranienbaum', serif;
   color: #F1D58B;
   overflow: hidden;

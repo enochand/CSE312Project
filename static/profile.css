@@ -18,7 +18,6 @@
     width: 100%;
     position: relative;
     float: left;
-    z-index: -1;
   }
   
   .header img {
@@ -30,12 +29,11 @@
   
   .container {
     background: #FFFAF8;
-    width:35%;
+    width: fit-content;
     height: 75%;
     text-align: left;
     position: absolute;
-    z-index: 0;
-    padding: 2.5% 5% 2.5% 5%;
+    padding: 3%;
   
     font-family: 'Noto Serif', serif;
     color: #152152;
@@ -86,13 +84,14 @@
     width: 100%;
     float: left;
     height: 100px;
+    overflow: hidden;
   }
   
   .line-break h1 {
     text-align: center;
     letter-spacing: 1.2px;
-    font-size: 56px;
+    font-size: max(3.25vw, 42px);
     font-family: 'Oranienbaum', serif;
     color: #F1D58B;
+    overflow: hidden;
   }
-  
