@@ -87,7 +87,10 @@ def find_posted_auctions_by_username(username):
 # Return all active auctions
 def all_auctions():
     """Only returns all the active auctions now"""
-    return list(auctions.find({"timeout": False}, {"_id": 0}))
+    allA = list(auctions.find({"timeout": False}, {"_id": 0}))
+    for a in allA:
+        a['username'] = get_username_by_id(a['user'])#update the username if the user happened to change their username
+    return allA
 
 
 # takes in a new user (callable the same way as a python dict)
