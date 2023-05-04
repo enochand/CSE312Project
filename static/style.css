@@ -43,6 +43,7 @@ body {
   padding: 2rem 2rem;
   background-color: #FFFAF8;
   text-align: left;
+  min-width: fit-content;
 
   font-family: 'Noto Serif', serif;
   color: #152152;

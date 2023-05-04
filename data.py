@@ -4,8 +4,8 @@ from time import time
 import json
 import threading
 
-# mongo_client = MongoClient('localhost')
-mongo_client = MongoClient('mongo')
+mongo_client = MongoClient('localhost')
+# mongo_client = MongoClient('mongo')
 db = mongo_client['excaliber']
 users = db['users']
 counter = db["counter"]
