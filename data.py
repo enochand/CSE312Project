@@ -87,10 +87,7 @@ def find_posted_auctions_by_username(username):
 # Return all active auctions
 def all_auctions():
     """Only returns all the active auctions now"""
-    allA = list(auctions.find({"timeout": False}, {"_id": 0}))
-    for a in allA:
-        a['username'] = get_username_by_id(a['user'])#update the username if the user happened to change their username
-    return allA
+    return list(auctions.find({"timeout": False}, {"_id": 0}))
 
 
 # takes in a new user (callable the same way as a python dict)
@@ -148,7 +145,15 @@ def end_auction(auction_id:int):
     # print("should have send a message to all people", flush=True) #Debug
     return True
 
+def change_username_all_auctions(old_username: str, new_username: str):
+    """This function changes the username of the seller and highest bidder to the new username"""
+    auctions.update_many({'username': old_username}, {'$set': {'username': new_username}})
+    auctions.update_many({'highest_bidder': old_username}, {'$set': {'highest_bidder': new_username}})
+    return
+
 def give_me_all_living_auctions_ids():
+    """Returns ids and durations of all auctions that aren't over yet.  This is run when a the 
+       server is restarted and the threads for each living auction must be restarted."""
     all_auctions = auctions.find({})
     ids = []
     durations = []

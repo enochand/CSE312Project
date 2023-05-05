@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, send_from_directory, jsonify, escape
+from flask import Flask, render_template, request, redirect, send_from_directory, jsonify
 from time import time, sleep
 import sessions
 import data
@@ -51,7 +51,7 @@ def new_user():
 @app.post('/login')
 def returning_user():
     # exit function if username is not a user
-    username = escape(request.form['username'])
+    username = escape_html(request.form['username'])
     user = data.find_user_by_username(username)
 
     if not user:
@@ -216,7 +216,7 @@ def create_auction():
         "user": user["id"],             # user: The id for the user who made the auction
         "username": username,           # username of person who made the auction
         "image": filename,              # image: The image for the item up for auction
-        "description": escape(description),     # description: The description of the item up for auction
+        "description": escape_html(description),     # description: The description of the item up for auction
         "time": int(time()) + duration,  # time: The time the auction is set to end
         "highest_bidder": 'Nobody has bid yet!',
         "highest_bid": price,
@@ -234,12 +234,8 @@ def create_auction():
     for connection in ss.web_sockets.values():
         connection.send(json.dumps(message))
 
-    # don't need username in auction anymore
-    auction.pop('username', None)
     # Insert auction into database
     data.new_auction(auction, user['id'], auction_id)
-
-
 
     # Redirect to auction display page
     return redirect("/auctions_page")
@@ -405,12 +401,15 @@ def change_username():
     user = is_logged_in(token)
     if not user:
         return redirect("/")
-    user["username"] = escape(request.form["new_username"])
+    old_username = user['username']
+    user["username"] = escape_html(request.form["new_username"])
+    new_username = user['username']
     if data.find_user_by_username(user["username"]):
         return "Username Taken"
     elif not helper.valid_username(user["username"]):
         return "Invalid Username"
     data.update_user(user)
+    data.change_username_all_auctions(old_username, new_username)#changing this username in all auctions as well
     return "Username Updated"
 
 
@@ -428,7 +427,7 @@ def update_auction():
     description = request.form.get("description")
     highest_bidder = request.form.get("highest_bidder")
     highest_bid = request.form.get("highest_bid")
-    auction = {"image": image, "description": escape(description), "highest_bidder": highest_bidder, "highest_bid": highest_bid}
+    auction = {"image": image, "description": escape_html(description), "highest_bidder": highest_bidder, "highest_bid": highest_bid}
     data.update_auction_by_id(auction_id, auction)
 
 
