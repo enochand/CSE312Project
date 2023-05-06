@@ -1,5 +1,6 @@
 //Web socket connection object
-const socket = new WebSocket('wss://' + location.host + '/websockets');
+let xsrf = document.getElementById("xsrf_token").innerHTML
+const socket = new WebSocket('wss://' + location.host + '/websockets/'+xsrf);
 
 
 let meID;//This is my ID

@@ -19,6 +19,7 @@
     <div class="forms-container">
       <div class="form-card">
         <form action="/signup" id="sign-up" method="post">
+             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <h1>Register</h1>
             <label for="new_username">Username: </label><br>
             <input id="new_username" type="text" name="new_username" size=30><br>
@@ -32,6 +33,7 @@
 
       <div class="form-card">
         <form action="/login" id="Log-in" method="post">
+             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <h1>Login</h1>
             <label for="username">Username: </label><br>
             <input id="username" type="text" name="username" size=30><br>

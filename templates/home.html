@@ -20,6 +20,7 @@
       
       <div class="form-card">
         <form class="FORM" action="/logout" id="Log-out" method="post">
+             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <h1>You're Logged In!</h1>
             <input type="submit" value="Log Out">
         </form>
@@ -27,6 +28,7 @@
       
       <div class="form-card">
         <form action="/change_username" id="change_username" method="post">
+             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <h1>Change Username</h1>
             <label for="new_username">Username: </label><br>
             <input id="new_username" type="text" name="new_username" size=30><br>

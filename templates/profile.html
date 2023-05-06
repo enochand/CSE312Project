@@ -30,6 +30,7 @@
       {% if is_user %}
       <h1>Change Password</h1>
           <form action="/change_password" id="change_password" method="post">
+           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               <label for="new_password">Password: </label>
               <input id="new_password" type="text" name="new_password">
               <input type="submit" value="Change Password">
@@ -37,6 +38,7 @@
       
       <h1>Change Username</h1>
           <form action="/change_username" id="change_username" method="post">
+           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               <label for="new_username">Username: </label>
               <input id="new_username" type="text" name="new_username">
               <input type="submit" value="Change Username">

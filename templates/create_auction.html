@@ -21,6 +21,7 @@
     <img src="static/images/auction.jpg" alt="auction-hammer">
     <div class="container">
       <form action="/create" method="post" enctype="multipart/form-data">
+           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           <h1>Create Auction</h1>
           <label for="price">Starting price:</label><br>
           <input id="price" type="number" name="price"><br>

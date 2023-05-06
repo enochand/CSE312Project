@@ -1,8 +1,11 @@
+import secrets
+
 from flask import Flask, render_template, request, redirect, send_from_directory, jsonify
 from time import time, sleep
 import sessions
 import data
 from flask_sock import Sock, ConnectionClosed
+from flask_wtf.csrf import CSRFProtect
 import json
 import helper
 import threading
@@ -10,9 +13,12 @@ from helper import escape_html
 
 
 app = Flask(__name__)
+csrf = CSRFProtect(app)
 sock = Sock(app)
 ss = sessions.Sessions(app)  # refer to session.py
 app.config["MAX_CONTENT_PATH"] = 1000000  # 1 MB
+app.config["SECRET_KEY"] = secrets.token_urlsafe(32)
+xsrf_tokens = {}
 
 
 # landing page; returns index.html (or redirects to home if logged in)
@@ -280,7 +286,9 @@ def returnAuctionsPage():
     user = is_logged_in(user_token)
     if not user:
         return redirect('/')
-    return render_template("auctions_page.html")
+    xsrf = secrets.token_urlsafe(32)
+    xsrf_tokens[xsrf] = user_token
+    return render_template("auctions_page.html", xsrf_token=xsrf)
 
 #send js for auctions_page
 @app.get("/js/<path:filename>")
@@ -316,12 +324,14 @@ def findPostedAuctions():
     postedAuctions = json.dumps(postedAuctions)
     return postedAuctions#returns a list of all won auctions
 
-@sock.route('/websockets')
-def websockets(sock):
+@sock.route('/websockets/<string:xsrf>')
+def websockets(sock, xsrf):
     """This function adds the client to the Sessions.web_sockets list, and keeps the the TCP connection alive
        until the client closes the connection.  If multiple clients with the same user_token attempt to connect
        this function trows and Exception."""
     user_token = request.cookies.get("token")
+    if user_token != xsrf_tokens[xsrf]:
+        exit()
     user_id = sessions.id_from_token(user_token) # We use this to verify the user over websockets
     user = data.find_user_by_id(user_id)
     username = user.get('username', None)
