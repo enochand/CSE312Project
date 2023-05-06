@@ -16,7 +16,7 @@ app = Flask(__name__)
 csrf = CSRFProtect(app)
 sock = Sock(app)
 ss = sessions.Sessions(app)  # refer to session.py
-app.config["MAX_CONTENT_PATH"] = 1000000  # 1 MB
+app.config["MAX_CONTENT_PATH"] = 10000000  # 10 MB
 app.config["SECRET_KEY"] = secrets.token_urlsafe(32)
 xsrf_tokens = {}
 
