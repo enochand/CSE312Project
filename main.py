@@ -288,7 +288,9 @@ def returnAuctionsPage():
         return redirect('/')
     xsrf = secrets.token_urlsafe(32)
     xsrf_tokens[xsrf] = user_token
-    return render_template("auctions_page.html", xsrf_token=xsrf)
+    response = render_template("auctions_page.html", xsrf_token=xsrf)
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    return response
 
 #send js for auctions_page
 @app.get("/js/<path:filename>")
