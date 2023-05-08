@@ -110,8 +110,10 @@ function appendAuction(auctionDictionary)
 
 
   //Create element and add it to the HTML
-  let auction = `<br></br><br></br>\
-<div class="active_auction" id="${auctionNumber}" >\
+  let new_elmement = document.createElement("div")
+  new_elmement.classList.add("active_auction")
+  new_elmement.setAttribute('id',`${auctionNumber}`)
+  new_elmement.innerHTML = `
       <p>Auction Number: ${auctionNumber}</p>\
       <p>Seller: <a href="https://cse312auction.com/user/${createdBy}">${createdBy}</a></p>\
       <img class="auction_image" src="item/${imageName}"/>\
@@ -122,10 +124,11 @@ function appendAuction(auctionDictionary)
       <button id="${auctionNumber}Button" value="${auctionNumber}" onclick="sendBid(this.value);">Send bid!!</button>\
       <label>Bid</label>\
       <input id="${auctionNumber}NewBid" type="number"  min="0" step="1" oninput="validity.valid||(value='')" />\
-</div>\
   `;
+
+
   const acutionsDiv = document.getElementById('Auctions');
-  acutionsDiv.innerHTML += auction;
+  acutionsDiv.appendChild(new_elmement)
   return;
 }
 
