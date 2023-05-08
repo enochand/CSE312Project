@@ -64,23 +64,6 @@ def find_won_auctions_by_username(username: str):
             output.append(a)
     return output
 
-def find_purchased_auctions_by_username(username: str):
-    found = users.find_one({"username": username})
-    if not found:
-        return None
-    
-    purchased = found["purchased_auctions"]
-    
-    purchased_auctions = []
-    for a in purchased:
-        auction = auctions.find_one({"id": a})
-        if not auction:
-            continue
-
-        purchased_auctions.append(auction)
-
-    return purchased_auctions
-
 def find_posted_auctions_by_username(username):
     return list(auctions.find({"username": username}, {"_id": 0}))
 

@@ -106,13 +106,11 @@ def user_info(user_id):
     username = user.get('username', None)
     user_auctions_posted = data.find_posted_auctions_by_username(username)
     user_auctions_won = data.find_won_auctions_by_username(username)
-    user_auctions_purchased = data.find_purchased_auctions_by_username(username)
     if user:
         user_template = render_template('profile.html', is_user=is_user,
                                         username=user["username"],
                                         posted_auctions=user_auctions_posted,
-                                        won_auctions=user_auctions_won,
-                                        purchased_auctions=user_auctions_purchased)
+                                        won_auctions=user_auctions_won)
         return user_template
     return "User not found"
 
