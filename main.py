@@ -129,8 +129,9 @@ def log_out():
 @app.get('/home')
 def home():
     user_token = request.cookies.get("token")
-    if is_logged_in(user_token):
-        return render_template('home.html')
+    user = is_logged_in(user_token)
+    if user:
+        return render_template('home.html', id=user["id"])
     return redirect('/')
 
 
@@ -142,7 +143,7 @@ def create_auction_page():
     if user is None:  # Not logged in
         return redirect("/")
 
-    return render_template("create_auction.html")
+    return render_template("create_auction.html", id=user["id"])
 
 
 # Create new auction if logged in:
@@ -286,7 +287,7 @@ def returnAuctionsPage():
         return redirect('/')
     xsrf = secrets.token_urlsafe(32)
     xsrf_tokens[xsrf] = user_token
-    response = render_template("auctions_page.html", xsrf_token=xsrf)
+    response = render_template("auctions_page.html", xsrf_token=xsrf, id=user["id"])
     return response
 
 #send js for auctions_page
@@ -420,6 +421,28 @@ def change_username():
     data.update_user(user)
     data.change_username_all_auctions(old_username, new_username)#changing this username in all auctions as well
     return "Username Updated"
+
+@app.post("/change_password")
+def change_password():
+    token = request.cookies.get("token")
+    user = is_logged_in(token)
+    if not user:
+        return redirect("/")
+    current_password = user["password"]
+    entered_password = request.form["old_password"]
+
+    if not ss.correct_pw(current_password, entered_password):
+        return "Invalid password entered"
+
+    new_password = request.form["new_password"]
+
+    if not helper.valid_password(new_password):
+        return "Password must be 8-20 characters long"
+
+    pw_hash = ss.pw_hash(new_password)
+    user["password"] = pw_hash
+    data.update_user(user)
+    return "Password Updated"
 
 
 # updates all auction info. if you don't want to update something, leave it as an empty string or None

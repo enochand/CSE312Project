@@ -31,8 +31,11 @@
       <h1>Change Password</h1>
           <form action="/change_password" id="change_password" method="post">
            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-              <label for="new_password">Password: </label>
-              <input id="new_password" type="text" name="new_password">
+              <label for="old_password">Old Password: </label>
+              <input id="old_password" type="password" name="old_password">
+              <br/>
+              <label for="new_password">New Password: </label>
+              <input id="new_password" type="password" name="new_password">
               <input type="submit" value="Change Password">
           </form>
       

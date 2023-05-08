@@ -25,17 +25,6 @@
             <input type="submit" value="Log Out">
         </form>
       </div>
-      
-      <div class="form-card">
-        <form action="/change_username" id="change_username" method="post">
-             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            <h1>Change Username</h1>
-            <label for="new_username">Username: </label><br>
-            <input id="new_username" type="text" name="new_username" size=30><br>
-            <br/>
-            <input type="submit" value="Save">
-        </form>
-      </div>
     </div>
   </div>
 
@@ -44,6 +33,7 @@
     <div class="nav-bar">
       <a href="/auctions_page" id="goToAuctionsPage">View Auctions</a>
       <a href="/create" id="goToCreate">Create Auction</a>
+      <a href="/user/{{ id }}" id="goToProfile">Profile</a>
     </div>
   </nav>
 
