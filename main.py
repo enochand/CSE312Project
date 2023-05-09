@@ -349,13 +349,18 @@ def websockets(sock, xsrf):
     while True:
         try:
             WSmessage = sock.receive()
-            WSmessage = json.loads(WSmessage)
         except:
             sessions.Sessions.web_sockets.pop(user_id, None)
             print(f'{username} id: {user_id} left websockets!')
             break  # break out of infinite while loop
-        messageType = WSmessage.get('messageType', None)
+        if WSmessage == b'':
+            sessions.Sessions.web_sockets.pop(user_id, None)
+            print(f'{username} id: {user_id} left websockets, but did so uncleanly!')
+            break  # break out of infinite while loop
 
+        #get message type and do appropriate action
+        WSmessage = json.loads(WSmessage)
+        messageType = WSmessage.get('messageType', None)
         if messageType == 'ping':
             message = {'messageType': 'pong'}
             sock.send(json.dumps(message))
